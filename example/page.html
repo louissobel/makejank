@@ -1,0 +1,15 @@
+<html>
+
+  <head>
+    {% load css "example/style.css" %}
+    {% load js "example/script.js" %}
+  </head>
+
+  <body onload="javago()">
+    {% load yaml "example/data.yml" as data %}
+
+    <h1>{{ data.greeting }}</h1>
+
+  </body>
+
+</html>

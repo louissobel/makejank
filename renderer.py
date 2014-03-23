@@ -22,21 +22,25 @@ class Renderer(object):
         Callback called by Load node while it is being parsed
          - calls out to LoaderManager to get a result
         """
-        # TODO ERROR CHECKING HERE??
-        res = self.loader_manager.service(self.env, load_type, args)
+        try:
+            res = self.loader_manager.service(self.env, load_type, args)
+        except KeyError:
+            raise ValueError("Unable to find loader argument %s" % load_type)
+        except TypeError:
+            # TODO: do we need some kind of standard interface for jinja errors?
+            raise
+
         if isinstance(res, basestring):
             return jinja2.nodes.Const(res)
         elif isinstance(res, tuple):
             name, value = res
-            # TODO: value must be a "safe" (jinja2 term) value
-            #       what happens if it is not?
+            # LoaderManager takes care of type checking for us.
             return jinja2.nodes.Assign(
                 jinja2.nodes.Name(name, 'store'),
                 jinja2.nodes.Const(value),
             )
         else:
-            # TODO: better error
-            raise TypeError
+            raise AssertionError("LoaderManager must disallow this!")
 
     def render(self, template_file):
         # TODO we also want to be able to render from a strign

@@ -64,3 +64,7 @@ class TestNonAbsoluteDep(unittest.TestCase):
     def runTest(self):
         with self.assertRaises(TypeError):
             staleness.is_stale(100, ['/sf', 'df'])
+
+class TestNoneProductLastModified(unittest.TestCase):
+    def runTest(self):
+        self.assertIs(staleness.is_stale(None, []), True)

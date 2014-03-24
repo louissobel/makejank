@@ -27,9 +27,12 @@ def is_stale(product_last_modified, deps):
 
     edge case: if any of the deps cannot be found, returns True (TODO ok?)
     edge case: if no deps are given, always returns False
+    edge case: if product_last_modified is None, return True
 
     if any of the paths aren't absolute, raises a type error (startswith(/))
     """
+    if product_last_modified is None:
+        return True
 
     for dep in deps:
         if not os.path.isabs(dep):

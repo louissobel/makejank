@@ -2,20 +2,35 @@
 Tests some basic stuff
 """
 import unittest
+import cPickle as pickle
 
 from loader_manager import LoaderManager
 from caches import TestingCache, NoopCache
+
+import test.helpers
 
 class TestLoader(object):
     tag = 'test'
 
     LOAD_RESULT = "test product contents"
+    PRODUCT_NAME = "test_product"
 
     def dependency_graph(self, env, args):
-        return 'test_product', ['dep1', 'dep2']
+        # No Deps
+        return self.PRODUCT_NAME, []
 
     def load(self, env, args):
         return self.LOAD_RESULT
+
+class TestLoaderWithNonexistentDependency(TestLoader):
+    def dependency_graph(self, env, args):
+        # No Deps
+        return 'test_product', ['/' + test.helpers.nonexistent_filename()]
+
+class TestLoaderNoCache(TestLoader):
+    def dependency_graph(self, env, args):
+        # No Cache
+        return None, []
 
 class TestGetLoader(unittest.TestCase):
 
@@ -74,6 +89,20 @@ class TestCheckLoadResultType(unittest.TestCase):
         ok, err = self.c(('a', object))
         self.assertFalse(ok)
 
+class TestCheckDepsTypes(unittest.TestCase):
+
+    def setUp(self):
+        lm = LoaderManager()
+        self.c = lm.check_deps_types
+
+    def test_ok(self):
+        ok, err = self.c(['/a', '/b/c/d.f'])
+        self.assertTrue(ok)
+
+    def test_bad(self):
+        ok, err = self.c(['/a', 'b/c/d'])
+        self.assertFalse(ok)
+
 #########
 # Tests for service
 
@@ -85,5 +114,56 @@ class TestService(unittest.TestCase):
         cache = TestingCache()
         lm = LoaderManager(cache)
         lm.register(TestLoader())
-
         self.assertEqual(lm.service(None, 'test', None), TestLoader.LOAD_RESULT)
+
+
+class TestServiceWithoutCache(unittest.TestCase):
+    """
+    survive without a cache
+    """
+    def runTest(self):
+        lm = LoaderManager()
+        lm.register(TestLoader())
+        self.assertEqual(lm.service(None, 'test', None), TestLoader.LOAD_RESULT)
+
+
+class TestServicePullsFromCache(unittest.TestCase):
+    """
+    TestLoader is never stale (no deps) so should get result from cache if its there
+    """
+    def runTest(self):
+        cache = TestingCache()
+        lm = LoaderManager(cache)
+        lm.register(TestLoader())
+        cache.put(TestLoader.PRODUCT_NAME, pickle.dumps("tricked you"))
+        self.assertEqual(lm.service(None, 'test', None), "tricked you")
+        self.assertEqual(cache.last_get, TestLoader.PRODUCT_NAME)
+
+
+class TestServiceCacheStale(unittest.TestCase):
+    """
+    TestLoaderWithNonexistentDependency is always stale, 
+    so needs to compute result then put in the value
+    """
+    def runTest(self):
+        cache = TestingCache()
+        lm = LoaderManager(cache)
+        lm.register(TestLoaderWithNonexistentDependency())
+        cache.put(TestLoader.PRODUCT_NAME, pickle.dumps("tricked you"))
+        # Make sure it ignores the "tricked you" in the cache.
+        self.assertEqual(lm.service(None, 'test', None), TestLoader.LOAD_RESULT)
+        self.assertEqual(cache.last_put, (TestLoader.PRODUCT_NAME, pickle.dumps(TestLoader.LOAD_RESULT)))
+
+class TestServiceNoCache(unittest.TestCase):
+    """
+    dont ever cache!
+    """
+    def runTest(self):
+        cache = TestingCache()
+        lm = LoaderManager(cache)
+        lm.register(TestLoaderNoCache())
+        self.assertEqual(lm.service(None, 'test', None), TestLoader.LOAD_RESULT)
+        self.assertEqual(cache.last_put, None)
+        self.assertEqual(cache.last_get, None)
+
+    

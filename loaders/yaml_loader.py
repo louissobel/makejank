@@ -1,6 +1,8 @@
 """
 Loader to load and parse a YAML file
 """
+from . import BaseLoader
+
 try:
     import yaml
 except ImportError:
@@ -8,7 +10,7 @@ except ImportError:
 else:
     HAVE_PYYAML = True
 
-class YamlLoader(object):
+class YamlLoader(BaseLoader):
 
     tag = 'yaml'
 
@@ -16,11 +18,6 @@ class YamlLoader(object):
         if not HAVE_PYYAML:
             # TODO: which error??
             raise ValueError
-
-    def depedency_graph(self, *args):
-        # Needs to be done every time
-        # (like .PHONY).
-        return None
 
     def load(self, env, args):
         filename, _, aswhat = args

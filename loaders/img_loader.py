@@ -3,13 +3,15 @@ mimetypes.init()
 import base64
 import textwrap
 
+from . import BaseLoader
+
 DEFAULT_MIMETYPE = "application/octet-stream"
 DATA_URI_TEMPLATE = "data:%s;base64,%s"
 IMG_TEMPLATE = '<img src="%s" />'
 
 PRODUCT_NAME_TEMPLATE = "%s:base64_img_tag"
 
-class ImgLoader(object):
+class ImgLoader(BaseLoader):
 
     tag = 'img'
 

@@ -1,10 +1,11 @@
+from . import BaseLoader
 
 SCRIPT_TEMPLATE = """<script type="text/javascript">
 %s
 </script>"""
 
 
-class JSLoader(object):
+class JSLoader(BaseLoader):
 
     tag = 'js'
 

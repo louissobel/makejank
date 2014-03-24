@@ -1,9 +1,10 @@
+from . import BaseLoader
 
 CSS_TEMPLATE = """<style type="text/css">
 %s
 </style>"""
 
-class CSSLoader(object):
+class CSSLoader(BaseLoader):
 
     tag = 'css'
 

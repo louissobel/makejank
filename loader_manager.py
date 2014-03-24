@@ -33,6 +33,8 @@ class LoaderManager(object):
         product, deps = loader.dependency_graph(env, args)
         # Check that deps are all absolute.
         ok, err = self.check_deps_types(deps)
+        if not ok:
+            raise TypeError(err)
 
         # TODO: dont cache is signaled with product being None :/
         #       or if we dont have a cache! is that right?

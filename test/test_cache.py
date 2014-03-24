@@ -1,7 +1,9 @@
 import unittest
 import time
+import tempfile
+import shutil
 
-from caches import MemoryCache
+from caches import MemoryCache, FilesystemCache
 
 class CacheMixin(object):
 
@@ -49,3 +51,14 @@ class CacheMixin(object):
 class TestMemoryCache(CacheMixin, unittest.TestCase):
 
     get_cache = lambda s : MemoryCache()
+
+class TestFilesystemCache(CacheMixin, unittest.TestCase):
+
+    def setUp(self):
+        self.tempdir = tempfile.mkdtemp()
+
+    def get_cache(self):
+        return FilesystemCache(self.tempdir)
+
+    def tearDown(self):
+        shutil.rmtree(self.tempdir)

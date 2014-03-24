@@ -4,9 +4,18 @@ Tests some basic stuff
 import unittest
 
 from loader_manager import LoaderManager
+from caches import TestingCache, NoopCache
 
 class TestLoader(object):
-    tag = 'ok'
+    tag = 'test'
+
+    LOAD_RESULT = "test product contents"
+
+    def dependency_graph(self, env, args):
+        return 'test_product', ['dep1', 'dep2']
+
+    def load(self, env, args):
+        return self.LOAD_RESULT
 
 class TestGetLoader(unittest.TestCase):
 
@@ -14,7 +23,7 @@ class TestGetLoader(unittest.TestCase):
         lm = LoaderManager()
         o = TestLoader()
         lm.register(o)
-        self.assertIs(o, lm.get_loader('ok'))
+        self.assertIs(o, lm.get_loader('test'))
 
 class TestLoaderNotThere(unittest.TestCase):
 
@@ -64,3 +73,17 @@ class TestCheckLoadResultType(unittest.TestCase):
     def test_fail_bad_tuple_second(self):
         ok, err = self.c(('a', object))
         self.assertFalse(ok)
+
+#########
+# Tests for service
+
+class TestService(unittest.TestCase):
+    """
+    Checks that service calls load
+    """
+    def runTest(self):
+        cache = TestingCache()
+        lm = LoaderManager(cache)
+        lm.register(TestLoader())
+
+        self.assertEqual(lm.service(None, 'test', None), TestLoader.LOAD_RESULT)

@@ -7,9 +7,17 @@ DEFAULT_MIMETYPE = "application/octet-stream"
 DATA_URI_TEMPLATE = "data:%s;base64,%s"
 IMG_TEMPLATE = '<img src="%s" />'
 
+PRODUCT_NAME_TEMPLATE = "%s:base64_img_tag"
+
 class ImgLoader(object):
 
     tag = 'img'
+
+    def dependency_graph(self, env, args):
+        filename = args[0]
+        product = PRODUCT_NAME_TEMPLATE % filename
+        deps = [filename]
+        return product, deps
 
     def load(self, env, args):
         filename = args[0]

@@ -7,7 +7,8 @@ import jinja2
 
 class LoaderManager(object):
 
-    def __init__(self):
+    def __init__(self, cache=None):
+        self.cache = cache
         self.loaders = {}
 
     def register(self, loader):

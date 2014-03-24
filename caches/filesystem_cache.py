@@ -4,8 +4,11 @@ Cache interface
  - get(key)
  - last_modified(key) --> None (if not exists) or last modified in unix
  - put (key, value)
+
+TODO: we should put some kind of warning, at least, when an access fails
 """
 import os.path
+import hashlib
 
 class _CacheAccessException(IOError):
     """
@@ -25,11 +28,13 @@ class FilesystemCache(object):
         performs a check to see if we can write / read to / from this directory
         """
         self.cachedir = cachedir
+        # TODO: check the cachedir given. must it exist?
+        # hmmmmm?
         # self._check_write_read(cachedir)
 
     def last_modified(self, key):
         try:
-            times = self._filetimes(key)
+            times = self._filetimes(self._hash(key))
         except _CacheAccessException:
             return None
         else:
@@ -38,7 +43,7 @@ class FilesystemCache(object):
 
     def get(self, key):
         try:
-            value = self._read_file(key)
+            value = self._read_file(self._hash(key))
         except _CacheAccessException:
             return None
         else:
@@ -46,7 +51,7 @@ class FilesystemCache(object):
 
     def put(self, key, value):
         try:
-            self._write_file(key, value)
+            self._write_file(self._hash(key), value)
         except _CacheAccessException:
             # FINE (TODO: what does put return)
             pass
@@ -87,6 +92,11 @@ class FilesystemCache(object):
                 'created': int(st.st_ctime),
                 'modified': int(st.st_mtime),
             }
+
+    def _hash(self, key):
+        m = hashlib.md5()
+        m.update(key)
+        return m.hexdigest()
 
     def _get_path(self, filename):
         return os.path.join(self.cachedir, filename)

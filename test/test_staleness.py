@@ -13,14 +13,14 @@ class TestNotStale(unittest.TestCase):
 
         os.utime(dep1.name, (5, 5))
         os.utime(dep2.name, (6, 6))
-        self.assertIs(staleness.is_stale(10, [dep1, dep2]), False)
+        self.assertIs(staleness.is_stale(10, [dep1.name, dep2.name]), False)
 
 class TestStale(unittest.TestCase):
    def runTest(self):
           dep1 = tempfile.NamedTemporaryFile()
           dep2 = tempfile.NamedTemporaryFile()
 
-          self.assertIs(staleness.is_stale(5, [dep1, dep2]), True)
+          self.assertIs(staleness.is_stale(5, [dep1.name, dep2.name]), True)
 
 class TestStaleOne(unittest.TestCase):
    def runTest(self):
@@ -28,18 +28,27 @@ class TestStaleOne(unittest.TestCase):
         dep2 = tempfile.NamedTemporaryFile()
 
         os.utime(dep1.name, (1, 1))
-        self.assertIs(staleness.is_stale(5, [dep1, dep2]), True)
+        self.assertIs(staleness.is_stale(5, [dep1.name, dep2.name]), True)
 
 class TestOneDepNotStale(unittest.TestCase):
     def runTest(self):
         dep = tempfile.NamedTemporaryFile()
         os.utime(dep.name, (5, 5))
-        self.assertIs(staleness.is_stale(10, [dep]), False)
+        self.assertIs(staleness.is_stale(10, [dep.name]), False)
 
 class TestOneDepStale(unittest.TestCase):
     def runTest(self):
         dep = tempfile.NamedTemporaryFile()
-        self.assertIs(staleness.is_stale(10, [dep]), True)
+        self.assertIs(staleness.is_stale(10, [dep.name]), True)
+
+class TestDepGreaterThanOrEqual(unittest.TestCase):
+    """
+    if there is a tie, we call it stales
+    """
+    def runTest(self):
+        dep = tempfile.NamedTemporaryFile()
+        os.utime(dep.name, (10, 10))
+        self.assertIs(staleness.is_stale(10, [dep.name]), True)
 
 class TestNoDeps(unittest.TestCase):
     def runTest(self):

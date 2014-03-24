@@ -27,6 +27,16 @@ class LoaderManager(object):
         else:
             return loader
 
+    def get_deps(self, env, loader_tag, args):
+        loader = self.get_loader(loader_tag) # Raises KeyError
+
+        product, deps = loader.dependency_graph(env, args)
+        # Check deps
+        ok, err = self.check_deps_types(deps)
+        if not ok:
+            raise TypeError(err)
+        return deps
+
     def service(self, env, loader_tag, args):
         loader = self.get_loader(loader_tag) # Raises KeyError.
 
@@ -67,6 +77,9 @@ class LoaderManager(object):
         return r
 
     def check_deps_types(self, deps):
+        if not isinstance(deps, list):
+            return False, "Deps must be a list"
+
         for dep in deps:
             if not os.path.isabs(dep):
                 return False, "Each dependency in list returned by load must be absolute"

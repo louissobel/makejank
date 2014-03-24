@@ -103,6 +103,10 @@ class TestCheckDepsTypes(unittest.TestCase):
         ok, err = self.c(['/a', 'b/c/d'])
         self.assertFalse(ok)
 
+    def test_not_a_list(self):
+        ok, err = self.c(8)
+        self.assertFalse(ok)
+
 #########
 # Tests for service
 

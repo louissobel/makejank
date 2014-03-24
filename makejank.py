@@ -17,4 +17,4 @@ lm.register(JSLoader())
 lm.register(ImgLoader())
 
 r = Renderer(os.getcwd(), lm)
-print r.render('example/page.html')
+print r.get_deps('example/page.html')

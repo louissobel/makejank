@@ -58,5 +58,5 @@ class LoadExtension(Extension):
                 # TODO: better error
                 raise TypeError
 
-        node = self.environment.makejank_load(load_type, s_args)
+        node = self.environment.makejank_load_callback(load_type, s_args)
         return node

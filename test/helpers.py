@@ -1,4 +1,5 @@
 import os
+import os.path
 import string
 import random
 
@@ -19,3 +20,10 @@ def nonexistent_filename():
         if not os.path.exists('/' + filename):
             break
     return filename
+
+def datadir():
+    thisdir = os.path.dirname(os.path.abspath(__file__))
+    return os.path.join(thisdir, 'data')
+
+def test_datafile(filename):
+    return os.path.join(datadir(), filename)

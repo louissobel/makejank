@@ -12,6 +12,7 @@ lm = LoaderManager()
 lm.register(YamlLoader())
 lm.register(CSSLoader())
 lm.register(JSLoader())
+lm.register(ImgLoader())
 
 r = Renderer(os.getcwd(), lm)
 print r.render('example/page.html')

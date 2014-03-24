@@ -1,5 +1,5 @@
 """
-tests for the js loader
+tests for the css loader
 """
 import unittest
 import tempfile

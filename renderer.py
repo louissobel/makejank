@@ -31,7 +31,7 @@ class Renderer(object):
             raise
 
         if isinstance(res, basestring):
-            return jinja2.nodes.Const(res)
+            return jinja2.nodes.Output([jinja2.nodes.Const(res)])
         elif isinstance(res, tuple):
             name, value = res
             # LoaderManager takes care of type checking for us.

@@ -2,8 +2,11 @@ import unittest
 
 from environment import Environment
 
-class TestEnvironment(unittest.TestCase):
+import test.helpers
+
+class TestEnvironmentResolvePath(unittest.TestCase):
 
     def runTest(self):
-        e = Environment('/a/b')
+        e = Environment(rootdir='/a/b')
         self.assertEquals('/a/b/c', e.resolve_path('c'))
+

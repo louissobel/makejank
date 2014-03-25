@@ -2,24 +2,20 @@ import sys
 import os
 import os.path
 
-import jinja2
-
 import environment
 from loaders import *
-from loader_manager import LoaderManager
 from caches import FilesystemCache
-
-cache = FilesystemCache('.makejank_cache')
-lm = LoaderManager(cache)
-lm.register(YamlLoader())
-lm.register(CSSLoader())
-lm.register(JSLoader())
-lm.register(ImgLoader())
 
 env = environment.Environment(
     rootdir=os.getcwd(),
-    loader_manager=lm,
+    loaders=[
+        YamlLoader(),
+        CSSLoader(),
+        JSLoader(),
+        ImgLoader(),
+    ],
+    cache=FilesystemCache('.makejank_cache')
 )
 
-print env.get_deps('example/page.html')
-print env.render('example/page.html')
+print env.get_deps('test/data/example/page.html')
+print env.render('test/data/example/page.html')

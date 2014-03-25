@@ -11,7 +11,7 @@ from loaders import JSLoader
 
 import test.helpers
 
-env = environment.Environment(rootpath='/')
+env = environment.Environment(rootdir='/')
 
 class TestOK(unittest.TestCase):
 

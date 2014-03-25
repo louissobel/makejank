@@ -13,7 +13,7 @@ from loaders import ImgLoader
 
 import test.helpers
 
-env = environment.Environment(rootpath='/')
+env = environment.Environment(rootdir='/')
 
 TEST_IMG = test.helpers.test_datafile('blue_arrow.png')
 

@@ -31,6 +31,7 @@ class FilesystemCache(object):
         # TODO: check the cachedir given. must it exist?
         # hmmmmm?
         # self._check_write_read(cachedir)
+        # TODO: janky - to what is the cachedir relative??
 
     def last_modified(self, key):
         try:

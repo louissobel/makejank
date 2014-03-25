@@ -23,7 +23,7 @@ good_yaml_expected = {
     'b': [1, 2, 3]
 }
 
-env = environment.Environment(rootpath='/')
+env = environment.Environment(rootdir='/')
 
 class TestOK(unittest.TestCase):
 

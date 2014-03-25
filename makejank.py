@@ -4,8 +4,8 @@ import os.path
 
 import jinja2
 
+import environment
 from loaders import *
-from renderer import Renderer
 from loader_manager import LoaderManager
 from caches import FilesystemCache
 
@@ -16,5 +16,10 @@ lm.register(CSSLoader())
 lm.register(JSLoader())
 lm.register(ImgLoader())
 
-r = Renderer(os.getcwd(), lm)
-print r.get_deps('example/page.html')
+env = environment.Environment(
+    rootdir=os.getcwd(),
+    loader_manager=lm,
+)
+
+print env.get_deps('example/page.html')
+print env.render('example/page.html')

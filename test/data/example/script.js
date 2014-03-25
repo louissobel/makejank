@@ -1,3 +1,4 @@
 var javago = function () {
-  document.getElementsByTagName("body")[0].innerHTML += "<h2>JAVASCRIPT</h2>"
+  var body = document.getElementsByTagName("body")[0];
+  body.innerHTML = "<h2>JAVASCRIPT</h2>" + body.innerHTML;
 };

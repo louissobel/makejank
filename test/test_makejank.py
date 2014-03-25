@@ -24,9 +24,12 @@ class TestDeps(unittest.TestCase):
     def runTest(self):
         # Heavily dependent on contents of page.
         deps = env.get_deps('example/page.html')
-        self.assertEquals(deps, set([
-            test.helpers.test_datafile('example/smiley.jpg')
-        ]))
+        self.assertEquals(deps, set(map(test.helpers.test_datafile, [
+            'example/smiley.jpg',
+            'example/base.html',
+            'example/macros.html',
+            'example/footer.html',
+        ])))
 
 class TestRender(unittest.TestCase):
     def runTest(self):

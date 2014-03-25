@@ -1,6 +1,7 @@
 """
 TemplateProcessor that detects dependencies in a makejank
 """
+import jinja2
 
 from template_processor import TemplateProcessor
 
@@ -43,7 +44,39 @@ class DependencyDetector(TemplateProcessor):
             template_filename,
         )
         self.deps = set()
-        self.jinja_env.parse(source)
+        tree = self.jinja_env.parse(source)
+
+        # That took care of Loads because of the callback
+        # (it's too bad we can't create our own nodes...)
+        # Now we walk for includes, imports, extendss
+        visitor = DependencyVisitor()
+        visitor.visit(tree)
+        # visitor.deps can have relative paths.
+        # lets make them absolute
+        jinja_deps = set(self.env.resolve_path(d) for d in visitor.deps)
+        self.deps |= jinja_deps
 
         self._getting_deps = False
         return self.deps
+
+
+class DependencyVisitor(jinja2.visitor.NodeVisitor):
+
+    def __init__(self, *args, **kwargs):
+        jinja2.visitor.NodeVisitor.__init__(self, *args, **kwargs)
+        self.deps = set()
+
+    def _extract_dep(self, node):
+        template = node.template
+        if isinstance(template, jinja2.nodes.Name):
+            # TODO: this needs to be a warning
+            raise ValueError("Can only track string jinja deps")
+        if not isinstance(template, jinja2.nodes.Const):
+            raise ValueError("Template in dep must be string...")
+
+        self.deps.add(template.value)
+
+    visit_Extends = _extract_dep
+    visit_Include = _extract_dep
+    visit_Import = _extract_dep
+    visit_FromImport = _extract_dep

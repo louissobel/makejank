@@ -1,17 +1,20 @@
-<html>
 
-  <head>
+{% extends "example/base.html" %}
+
+{% block head %}
     {% load css "example/style.css" %}
     {% load js "example/script.js" %}
-  </head>
+{% endblock %}
 
-  <body onload="javago()">
+
+{% block body %}
     {% load yaml "example/data.yml" as data %}
 
     <h1>{{ data.greeting }}</h1>
+    {% include "example/footer.html" %}
+    {% import "example/macros.html" as macros %}
+    {{ macros.cool_macro() }}
 
     {% load img "example/smiley.jpg" %}
-
-  </body>
-
-</html>
+    
+{% endblock %}

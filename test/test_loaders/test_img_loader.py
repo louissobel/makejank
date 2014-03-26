@@ -15,7 +15,7 @@ import test.helpers
 
 env = environment.Environment(rootdir='/')
 
-TEST_IMG = test.helpers.test_datafile('blue_arrow.png')
+TEST_IMG = test.helpers.test_datafile('example/blue_arrow.png')
 
 class TestOK(unittest.TestCase):
 

@@ -56,6 +56,11 @@ class DependencyDetector(TemplateProcessor):
         jinja_deps = set(self.env.resolve_path(d) for d in visitor.deps)
         self.deps |= jinja_deps
 
+        # now I need to recurse... (on relative paths)
+        # TODO: now we introduce infinite recursion...
+        for dep in visitor.deps:
+            self.deps |= self.env.get_deps(dep)
+
         self._getting_deps = False
         return self.deps
 

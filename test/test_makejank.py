@@ -29,6 +29,7 @@ class TestDeps(unittest.TestCase):
             'example/base.html',
             'example/macros.html',
             'example/footer.html',
+            'example/blue_arrow.png',
         ])))
 
 class TestRender(unittest.TestCase):

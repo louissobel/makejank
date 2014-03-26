@@ -18,5 +18,5 @@ env = environment.Environment(
     cache=FilesystemCache('.makejank_cache')
 )
 
-print env.get_deps('example/page.html')
-#print env.render('example/page.html')
+#print env.get_deps('example/page.html')
+print env.render('example/page.html')

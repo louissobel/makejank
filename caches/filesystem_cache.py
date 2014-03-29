@@ -28,10 +28,23 @@ class FilesystemCache(object):
         performs a check to see if we can write / read to / from this directory
         """
         self.cachedir = cachedir
-        # TODO: check the cachedir given. must it exist?
-        # hmmmmm?
-        # self._check_write_read(cachedir)
-        # TODO: janky - to what is the cachedir relative??
+
+        if not os.path.isabs(self.cachedir):
+            raise ValueError("Must initialize FilesystemCache with an absolute path")
+
+        if not os.path.isdir(self.cachedir):
+            if os.path.exists(self.cachedir):
+                raise ValueError("Cachedir already exists and is not a directory")
+            try:
+                os.mkdir(self.cachedir)
+            except OSError as e:
+                # Either some component also doesn't exist
+                # or we lack permission. Whatever.
+                raise ValueError("Unable to create cachedir: %s" % str(e))
+
+        can_read_and_write = self._check_can_read_and_write()
+        if not can_read_and_write:
+            raise ValueError("Unable to write and read from cachedir")
 
     def last_modified(self, key):
         try:
@@ -56,6 +69,28 @@ class FilesystemCache(object):
         except _CacheAccessException:
             # FINE (TODO: what does put return)
             pass
+
+    def _check_can_read_and_write(self):
+        """
+        writes a key, makes sure we get it back,
+        the deletes it. a lil jank, because
+        we use public and private methods.
+        """
+        key = 'CHECK_CAN_READ_AND_WRITE'
+        value = 'ABC123xyz!@#$'
+        self.put(key, value)
+        r = self.get(key)
+        if not r == value:
+            return False
+
+        # Now delete it.
+        path = self._get_path(self._hash(key))
+        try:
+            os.unlink(path)
+        except OSError as e:
+            return False # This could use some more information.
+
+        return True
 
     def _write_file(self, filename, contents):
         path = self._get_path(filename)

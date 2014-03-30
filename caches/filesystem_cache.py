@@ -5,7 +5,6 @@ Cache interface
  - last_modified(key) --> None (if not exists) or last modified in unix
  - put (key, value)
 
-TODO: we should put some kind of warning, at least, when an access fails
 """
 import os.path
 import hashlib
@@ -52,7 +51,6 @@ class FilesystemCache(object):
         except _CacheAccessException:
             return None
         else:
-            # TODO: do we need to look at created time too?
             return times['modified']
 
     def get(self, key):
@@ -67,7 +65,7 @@ class FilesystemCache(object):
         try:
             self._write_file(self._hash(key), value)
         except _CacheAccessException:
-            # FINE (TODO: what does put return)
+            # FINE, silently ignore.
             pass
 
     def _check_can_read_and_write(self):

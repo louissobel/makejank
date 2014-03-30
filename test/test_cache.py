@@ -3,7 +3,7 @@ import time
 import tempfile
 import shutil
 
-from caches import MemoryCache, FilesystemCache, TestingCache
+from makejank.caches import MemoryCache, FilesystemCache, TestingCache
 
 class CacheMixin(object):
 

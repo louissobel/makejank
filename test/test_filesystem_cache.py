@@ -8,7 +8,7 @@ import os.path
 import shutil
 import stat
 
-from caches import FilesystemCache
+from makejank.caches import FilesystemCache
 
 import test.helpers
 

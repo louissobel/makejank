@@ -2,7 +2,7 @@ import unittest
 import tempfile
 import os
 
-import staleness
+from makejank import staleness
 
 import test.helpers
 

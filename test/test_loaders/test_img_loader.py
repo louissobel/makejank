@@ -8,12 +8,12 @@ import base64
 
 from bs4 import BeautifulSoup
 
-import environment
-from loaders import ImgLoader
+from makejank.environment import Environment
+from makejank.loaders import ImgLoader
 
 import test.helpers
 
-env = environment.Environment(rootdir='/')
+env = Environment(rootdir='/')
 
 TEST_IMG = test.helpers.test_datafile('example/blue_arrow.png')
 

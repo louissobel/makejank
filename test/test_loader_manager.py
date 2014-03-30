@@ -4,8 +4,8 @@ Tests some basic stuff
 import unittest
 import cPickle as pickle
 
-from loader_manager import LoaderManager
-from caches import TestingCache, NoopCache
+from makejank.loader_manager import LoaderManager
+from makejank.caches import TestingCache, NoopCache
 
 import test.helpers
 

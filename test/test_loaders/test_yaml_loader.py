@@ -5,8 +5,8 @@ import unittest
 import tempfile
 import sys
 
-import environment
-from loaders import YamlLoader
+from makejank.environment import Environment
+from makejank.loaders import YamlLoader
 
 import test.helpers
 
@@ -23,7 +23,7 @@ good_yaml_expected = {
     'b': [1, 2, 3]
 }
 
-env = environment.Environment(rootdir='/')
+env = Environment(rootdir='/')
 
 class TestOK(unittest.TestCase):
 
@@ -73,11 +73,11 @@ class TestNoYaml(unittest.TestCase):
         self.fail_yaml = test.helpers.ForceImportFailure(['yaml'])
         sys.meta_path.append(self.fail_yaml)
 
-        import loaders.yaml_loader
-        reload(loaders.yaml_loader)
+        import makejank.loaders.yaml_loader
+        reload(makejank.loaders.yaml_loader)
         with self.assertRaises(ValueError):
-            loaders.yaml_loader.YamlLoader()
+            makejank.loaders.yaml_loader.YamlLoader()
 
         sys.meta_path.remove(self.fail_yaml)
-        reload(loaders.yaml_loader)
+        reload(makejank.loaders.yaml_loader)
 

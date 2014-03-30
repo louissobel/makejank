@@ -6,12 +6,12 @@ import tempfile
 
 from bs4 import BeautifulSoup
 
-import environment
-from loaders import CSSLoader
+from makejank.environment import Environment
+from makejank.loaders import CSSLoader
 
 import test.helpers
 
-env = environment.Environment(rootdir='/')
+env = Environment(rootdir='/')
 
 class TestOK(unittest.TestCase):
 

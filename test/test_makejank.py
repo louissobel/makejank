@@ -5,9 +5,9 @@ import unittest
 import tempfile
 import shutil
 
-import environment
-from loaders import *
-from caches import FilesystemCache
+from makejank import environment
+from makejank.loaders import *
+from makejank.caches import FilesystemCache
 
 import test.helpers
 

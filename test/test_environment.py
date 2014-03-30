@@ -1,6 +1,6 @@
 import unittest
 
-from environment import Environment
+from makejank.environment import Environment
 
 import test.helpers
 

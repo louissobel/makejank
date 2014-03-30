@@ -7,10 +7,8 @@ from template_processor import TemplateProcessor
 
 class DependencyDetector(TemplateProcessor):
     """
-    Only should have process called once
-    TODO: should we enforce that ^^
-    or actually, it is just not threadsafe or recursion safe :/
-    but we'll detect and blow up (relying on python atomicity)
+    .process is not reentrant, an assertion error will be
+    thrown if it is used improperly.
     """
 
     def __init__(self, *args, **kwargs):
@@ -61,8 +59,10 @@ class DependencyDetector(TemplateProcessor):
         jinja_deps = set(self.env.resolve_path(d) for d in visitor.deps)
         self.deps |= jinja_deps
 
-        # now I need to recurse... (on relative paths)
+        # Now recurse... (on _relative_ paths)
         # TODO: now we introduce infinite recursion...
+        # jinja2 does not check for this, handled by python recursion limit.
+        # So for now, allow that to go through.
         for dep in visitor.deps:
             self.deps |= self.env.get_deps(dep)
 

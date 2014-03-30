@@ -36,7 +36,7 @@ class Makejank(object):
     def get_deps(self, source_file):
         return self.env.get_deps(source_file)
 
-if __name__ == "__main__":
+def main():
     import argparse
 
     parser = argparse.ArgumentParser(
@@ -87,3 +87,6 @@ if __name__ == "__main__":
     makejank = Makejank(kwargs)
     source_path = os.path.join(os.getcwd(), args.source)
     print makejank.render(source_path)
+
+if __name__ == "__main__":
+    main()

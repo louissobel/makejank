@@ -16,7 +16,7 @@ import environment
 class TemplateProcessor(object):
 
     def __init__(self, env):
-        self.jinja_loader = jinja2.FileSystemLoader([env.rootdir])
+        self.jinja_loader = jinja2.FileSystemLoader(['/', env.rootdir])
         self.jinja_env = jinja2.Environment(
             loader=self.jinja_loader,
             extensions=[jinja_extensions.LoadExtension],

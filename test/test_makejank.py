@@ -2,6 +2,8 @@
 sort of integration test here
 """
 import unittest
+import tempfile
+import shutil
 
 import environment
 from loaders import *
@@ -9,16 +11,21 @@ from caches import FilesystemCache
 
 import test.helpers
 
-env = environment.Environment(
-    rootdir=test.helpers.datadir(),
-    loaders=[
-        YamlLoader(),
-        CSSLoader(),
-        JSLoader(),
-        ImgLoader(),
-    ],
-    cache=FilesystemCache('.makejank_cache')
-)
+def setup_module():
+    global env
+    global tempdir
+
+    tempdir = tempfile.mkdtemp()
+    env = environment.Environment(
+        rootdir=test.helpers.datadir(),
+        loaders=[
+            YamlLoader(),
+            CSSLoader(),
+            JSLoader(),
+            ImgLoader(),
+        ],
+        cache=FilesystemCache(tempdir)
+    )
 
 class TestDeps(unittest.TestCase):
     def runTest(self):
@@ -37,3 +44,7 @@ class TestRender(unittest.TestCase):
         # For now, just test that it doesn't throw an error,
         # :/ jank.
         rendered = env.render('example/page.html')
+
+def teardown_module():
+    global tempdir
+    shutil.rmtree(tempdir)

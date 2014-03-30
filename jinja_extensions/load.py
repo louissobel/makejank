@@ -66,5 +66,11 @@ class LoadExtension(Extension):
                     parser.filename,
                 )
 
-        node = self.environment.makejank_load_callback(load_type, s_args)
+        try:
+            node = self.environment.makejank_load_callback(load_type, s_args)
+        except (TypeError, ValueError) as e:
+            raise jinja2.TemplateAssertionError(e.message, lineno, parser.name, parser.filename)
+        except SyntaxError as e:
+            raise jinja2.TemplateSyntaxError(e.message, lineno, parser.name, parser.filename)
+        # Let other exceptions bubble up.
         return node

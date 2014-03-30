@@ -29,12 +29,12 @@ class ImgLoader(BaseLoader):
         if mime is None:
             mime = DEFAULT_MIMETYPE
 
+        pathname = env.resolve_path(filename)
         try:
-            with open(env.resolve_path(filename), 'rb') as f:
+            with open(pathname, 'rb') as f:
                 data = f.read()
-        except IOError:
-            # TODO: WHAT DO WE DO
-            raise ValueError
+        except IOError as e:
+            raise ValueError("Error reading file %s: %s" % (pathname, e.strerror))
 
         b64data = base64.b64encode(data)
         data_uri = DATA_URI_TEMPLATE % (mime, b64data)

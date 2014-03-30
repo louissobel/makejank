@@ -15,10 +15,15 @@ class Renderer(TemplateProcessor):
         try:
             res = self.env.loader_manager.service(self.env, load_type, args)
         except KeyError:
-            raise ValueError("Unable to find loader argument %s" % load_type)
-        except TypeError:
-            # TODO: do we need some kind of standard interface for jinja errors?
-            # this is a misbehaving loader
+            raise TypeError("Unable to find loader of type %s" % load_type)
+        except TypeError as e:
+            # This is a misbehaving loader, re-raise.
+            raise
+        except ValueError as e:
+            # A loader had a problem, re-raise.
+            raise
+        except SyntaxError as e:
+            # Sent up by a loader, re-raise.
             raise
 
         if isinstance(res, basestring):

@@ -28,10 +28,15 @@ class DependencyDetector(TemplateProcessor):
                 args,
             )
         except KeyError:
-            raise ValueError("Unable to find loader with type %s" % load_type)
-        except ValueError:
-            # misbehaving loader. what do we do?
-            # TODO what do we do?
+            raise TypeError("Unable to find loader with type %s" % load_type)
+        except TypeError as e:
+            # This is a misbehaving loader, re-raise.
+            raise
+        except ValueError as e:
+            # A loader had a problem, re-raise.
+            raise
+        except SyntaxError as e:
+            # Sent up by a loader, re-raise.
             raise
 
     def process(self, template_filename):

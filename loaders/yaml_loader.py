@@ -23,14 +23,14 @@ class YamlLoader(BaseLoader):
         filename, _, aswhat = args
         # filename 'as' aswhat
         # TODO should `aswhat` be optional?
+
+        pathname = env.resolve_path(filename)
         try:
-            with open(env.resolve_path(filename)) as f:
+            with open(pathname) as f:
                 data = yaml.load(f.read())
-        except IOError:
-            # TODO: what do we do?
-            raise ValueError("Unable To Find %s" % filename)
+        except IOError as e:
+            raise ValueError("Error reading file %s: %s" % (pathname, e.strerror))
         except yaml.YAMLError as e:
-            # TODO: WHAT DO WE DO?
-            raise ValueError("Malformed yaml in %s (%s)" % (filename, str(e)))
+            raise ValueError("Malformed yaml in %s: %s" % (filename, e.message))
 
         return aswhat, data

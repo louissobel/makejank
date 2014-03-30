@@ -12,11 +12,11 @@ class JSLoader(BaseLoader):
     def load(self, env, args):
         filename = args[0]
 
+        pathname = env.resolve_path(filename)
         try:
-            with open(env.resolve_path(filename)) as f:
+            with open(pathname) as f:
                 script = f.read()
-        except IOError:
-            # TODO: WHAT DO WE DO
-            raise ValueError
+        except IOError as e:
+            raise ValueError("Error reading file %s: %s" % (pathname, e.strerror))
 
         return SCRIPT_TEMPLATE % script

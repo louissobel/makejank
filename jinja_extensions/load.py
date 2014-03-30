@@ -39,8 +39,12 @@ class LoadExtension(Extension):
         # ok, first arg is load type
         load_type = parser.parse_expression()
         if not isinstance(load_type, jinja2.nodes.Name):
-            # TODO: better error
-            raise TypeError
+            raise jinja2.TemplateSyntaxError(
+                "Argument after 'load' must be bare keyword. Got %s" % type(load_type).__name__,
+                lineno,
+                parser.name,
+                parser.filename,
+            )
         load_type = load_type.name
 
         args = []
@@ -55,8 +59,12 @@ class LoadExtension(Extension):
             elif isinstance(arg, jinja2.nodes.Name):
                 s_args.append(arg.name)
             else:
-                # TODO: better error
-                raise TypeError
+                raise jinja2.TemplateSyntaxError(
+                    "Arguments to load must be strings or bare keywords. Got %s" % type(arg).__name__,
+                    lineno,
+                    parser.name,
+                    parser.filename,
+                )
 
         node = self.environment.makejank_load_callback(load_type, s_args)
         return node

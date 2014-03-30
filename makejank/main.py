@@ -50,6 +50,12 @@ def main():
     source_group.add_argument('source', nargs='?') # TODO
     source_group.add_argument('-t', '--target') # TODO (jankfile target)
 
+    parser.add_argument(
+        '--deps',
+        action='store_true',
+        default=False,
+        help='Print out dependencies, one per line',
+    )
 
     # config options
     config_group = parser.add_argument_group(title="configuration options")
@@ -86,7 +92,12 @@ def main():
 
     makejank = Makejank(kwargs)
     source_path = os.path.join(os.getcwd(), args.source)
-    print makejank.render(source_path)
+
+    if args.deps:
+        for dep in makejank.get_deps(source_path):
+            print dep
+    else:
+        print makejank.render(source_path)
 
 if __name__ == "__main__":
     main()

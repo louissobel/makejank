@@ -77,8 +77,8 @@ class LoaderManager(object):
         return r
 
     def check_deps_types(self, deps):
-        if not isinstance(deps, list):
-            return False, "Deps must be a list"
+        if not isinstance(deps, set):
+            return False, "Deps must be a Set"
 
         for dep in deps:
             if not os.path.isabs(dep):

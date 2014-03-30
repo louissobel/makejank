@@ -9,7 +9,7 @@ class BaseLoader(object):
         Default to Signaling a Nocache by returning None product.
         And, specify no deps.
         """
-        return None, []
+        return None, set()
 
     def load(self, env, args):
         """

@@ -22,11 +22,11 @@ class DependencyDetector(TemplateProcessor):
         mutates list set deps by adding to it from loader_manager queries
         """
         try:
-            self.deps |= set(self.env.loader_manager.get_deps(
+            self.deps |= self.env.loader_manager.get_deps(
                 self.env,
                 load_type,
                 args,
-            ))
+            )
         except KeyError:
             raise ValueError("Unable to find loader with type %s" % load_type)
         except ValueError:

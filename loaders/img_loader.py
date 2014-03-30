@@ -18,7 +18,7 @@ class ImgLoader(BaseLoader):
     def dependency_graph(self, env, args):
         filename = args[0]
         product = PRODUCT_NAME_TEMPLATE % filename
-        deps = [env.resolve_path(filename)]
+        deps = set([env.resolve_path(filename)])
         return product, deps
 
     def load(self, env, args):

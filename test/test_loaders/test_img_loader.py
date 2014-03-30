@@ -64,7 +64,7 @@ class TestDependencyGraph(unittest.TestCase):
         product, deps = loader.dependency_graph(env, args)
 
         expected_product = "%s:base64_img_tag" % filename
-        expected_deps = ['/' + filename]
+        expected_deps = set(['/' + filename])
 
         self.assertEquals(product, expected_product)
         self.assertEquals(deps, expected_deps)

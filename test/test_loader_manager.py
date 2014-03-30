@@ -17,7 +17,7 @@ class TestLoader(object):
 
     def dependency_graph(self, env, args):
         # No Deps
-        return self.PRODUCT_NAME, []
+        return self.PRODUCT_NAME, set()
 
     def load(self, env, args):
         return self.LOAD_RESULT
@@ -25,12 +25,12 @@ class TestLoader(object):
 class TestLoaderWithNonexistentDependency(TestLoader):
     def dependency_graph(self, env, args):
         # No Deps
-        return 'test_product', ['/' + test.helpers.nonexistent_filename()]
+        return 'test_product', set(['/' + test.helpers.nonexistent_filename()])
 
 class TestLoaderNoCache(TestLoader):
     def dependency_graph(self, env, args):
         # No Cache
-        return None, []
+        return None, set()
 
 class TestGetLoader(unittest.TestCase):
 
@@ -96,14 +96,14 @@ class TestCheckDepsTypes(unittest.TestCase):
         self.c = lm.check_deps_types
 
     def test_ok(self):
-        ok, err = self.c(['/a', '/b/c/d.f'])
+        ok, err = self.c(set(['/a', '/b/c/d.f']))
         self.assertTrue(ok)
 
     def test_bad(self):
-        ok, err = self.c(['/a', 'b/c/d'])
+        ok, err = self.c(set(['/a', 'b/c/d']))
         self.assertFalse(ok)
 
-    def test_not_a_list(self):
+    def test_not_a_set(self):
         ok, err = self.c(8)
         self.assertFalse(ok)
 

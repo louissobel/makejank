@@ -4,3 +4,8 @@ env
 
 # for testing
 .makejank_cache
+
+.ackrc
+
+cover
+.coverage

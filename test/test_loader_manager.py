@@ -2,7 +2,6 @@
 Tests some basic stuff
 """
 import unittest
-import cPickle as pickle
 
 from makejank.loader_manager import LoaderManager
 from makejank.caches import TestingCache, NoopCache
@@ -140,7 +139,7 @@ class TestServicePullsFromCache(unittest.TestCase):
         cache = TestingCache()
         lm = LoaderManager(cache)
         lm.register(TestLoader())
-        cache.put(TestLoader.PRODUCT_NAME, pickle.dumps("tricked you"))
+        cache.put(TestLoader.PRODUCT_NAME, "tricked you")
         self.assertEqual(lm.service(None, 'test', None), "tricked you")
         self.assertEqual(cache.last_get, TestLoader.PRODUCT_NAME)
 
@@ -154,10 +153,10 @@ class TestServiceCacheStale(unittest.TestCase):
         cache = TestingCache()
         lm = LoaderManager(cache)
         lm.register(TestLoaderWithNonexistentDependency())
-        cache.put(TestLoader.PRODUCT_NAME, pickle.dumps("tricked you"))
+        cache.put(TestLoader.PRODUCT_NAME, "tricked you")
         # Make sure it ignores the "tricked you" in the cache.
         self.assertEqual(lm.service(None, 'test', None), TestLoader.LOAD_RESULT)
-        self.assertEqual(cache.last_put, (TestLoader.PRODUCT_NAME, pickle.dumps(TestLoader.LOAD_RESULT)))
+        self.assertEqual(cache.last_put, (TestLoader.PRODUCT_NAME, TestLoader.LOAD_RESULT))
 
 class TestServiceNoCache(unittest.TestCase):
     """

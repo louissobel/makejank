@@ -4,7 +4,6 @@ Finding them, and passing data to them
 service method takes care of cacheing?
 """
 import os.path
-import cPickle as pickle
 
 import jinja2
 
@@ -62,12 +61,11 @@ class LoaderManager(object):
         else:
             if stale:
                 result = self._load_and_check(loader, env, args)
-
-                self.cache.put(product, pickle.dumps(result))
+                self.cache.put(product, result)
             else:
                 # I don't need to type check here, because it only got
                 # _into_ the cache if it has the right type.
-                result = pickle.loads(self.cache.get(product))
+                result = self.cache.get(product)
 
         return result
 

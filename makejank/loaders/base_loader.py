@@ -4,12 +4,18 @@ Simple base loader
 
 class BaseLoader(object):
 
-    def dependency_graph(self, env, args):
+    def product(self, env, args):
         """
-        Default to Signaling a Nocache by returning None product.
-        And, specify no deps.
+        Abstract. A string uniquely identifying the product of this
+        (for the cache). Return None for no-cache
         """
-        return None, set()
+        raise NotImplemented
+
+    def dependencies(self, env, args):
+        """
+        Abstract. What dependencies does this have?
+        """
+        raise NotImplemented
 
     def load(self, env, args):
         """

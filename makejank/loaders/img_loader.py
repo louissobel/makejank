@@ -15,11 +15,13 @@ class ImgLoader(BaseLoader):
 
     tag = 'img'
 
-    def dependency_graph(self, env, args):
+    def product(self, env, args):
         filename = args[0]
-        product = PRODUCT_NAME_TEMPLATE % filename
-        deps = set([env.resolve_path(filename)])
-        return product, deps
+        return PRODUCT_NAME_TEMPLATE % filename
+
+    def dependencies(self, env, args):
+        filename = args[0]
+        return set([env.resolve_path(filename)])
 
     def load(self, env, args):
         filename = args[0]

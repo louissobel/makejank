@@ -29,8 +29,8 @@ class LoaderManager(object):
 
     def get_deps(self, env, loader_tag, args):
         loader = self.get_loader(loader_tag) # Raises KeyError
+        deps = loader.dependencies(env, args)
 
-        product, deps = loader.dependency_graph(env, args)
         # Check deps
         ok, err = self.check_deps_types(deps)
         if not ok:
@@ -40,7 +40,9 @@ class LoaderManager(object):
     def service(self, env, loader_tag, args):
         loader = self.get_loader(loader_tag) # Raises KeyError.
 
-        product, deps = loader.dependency_graph(env, args)
+        product = loader.product(env, args)
+        deps = loader.dependencies(env, args)
+
         # Check that deps are all absolute.
         ok, err = self.check_deps_types(deps)
         if not ok:

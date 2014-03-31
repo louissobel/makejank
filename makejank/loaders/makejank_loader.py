@@ -10,11 +10,13 @@ class MakejankLoader(BaseLoader):
 
     tag = 'makejank'
 
-    def dependency_graph(self, env, args):
+    def product(self, env, args):
         filename = args[0]
-        deps = DependencyDetector(env).process(filename)
-        product = PRODUCT_NAME_TEMPLATE % filename
-        return product, deps
+        return PRODUCT_NAME_TEMPLATE % filename
+
+    def dependencies(self, env, args):
+        filename = args[0]
+        return DependencyDetector(env).process(filename)
 
     def load(self, env, args):
         filename = args[0]

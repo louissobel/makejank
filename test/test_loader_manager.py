@@ -15,22 +15,23 @@ class TestLoader(object):
     LOAD_RESULT = "test product contents"
     PRODUCT_NAME = "test_product"
 
-    def dependency_graph(self, env, args):
+    def product(self, env, args):
+        return self.PRODUCT_NAME
+
+    def dependencies(self, env, args):
         # No Deps
-        return self.PRODUCT_NAME, set()
+        return set()
 
     def load(self, env, args):
         return self.LOAD_RESULT
 
 class TestLoaderWithNonexistentDependency(TestLoader):
-    def dependency_graph(self, env, args):
-        # No Deps
-        return 'test_product', set(['/' + test.helpers.nonexistent_filename()])
+    def dependencies(self, env, args):
+        return set(['/' + test.helpers.nonexistent_filename()])
 
 class TestLoaderNoCache(TestLoader):
-    def dependency_graph(self, env, args):
-        # No Cache
-        return None, set()
+    def product(self, env, args):
+        return None
 
 class TestGetLoader(unittest.TestCase):
 

@@ -54,17 +54,24 @@ class TestCannotFindFile(unittest.TestCase) :
         with self.assertRaises(ValueError) as e:
             loader.load(env, args)
 
-class TestDependencyGraph(unittest.TestCase):
+class TestDependencies(unittest.TestCase):
 
     def runTest(self):
         loader = ImgLoader()
         filename = test.helpers.nonexistent_filename()
 
         args = [filename]
-        product, deps = loader.dependency_graph(env, args)
-
-        expected_product = "%s:base64_img_tag" % filename
+        deps = loader.dependencies(env, args)
         expected_deps = set(['/' + filename])
-
-        self.assertEquals(product, expected_product)
         self.assertEquals(deps, expected_deps)
+
+class TestProduct(unittest.TestCase):
+
+    def runTest(self):
+        loader = ImgLoader()
+        filename = test.helpers.nonexistent_filename()
+
+        args = [filename]
+        product = loader.product(env, args)
+        expected_product = "%s:base64_img_tag" % filename
+        self.assertEquals(product, expected_product)

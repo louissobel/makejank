@@ -19,9 +19,12 @@ class YamlLoader(BaseLoader):
             # TODO: which error??
             raise ValueError
 
-    def dependency_graph(self, env, args):
+    def product(self, env, args):
+        return None
+
+    def dependencies(self, env, args):
         filename = args[0]
-        return None, set([env.resolve_path(filename)])
+        return set([env.resolve_path(filename)])
 
     def load(self, env, args):
         filename, _, aswhat = args

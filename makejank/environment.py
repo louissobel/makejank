@@ -6,9 +6,6 @@ import os.path
 from loader_manager import LoaderManager
 from caches import NoopCache
 
-from renderer import Renderer
-from dependency_detector import DependencyDetector
-
 
 class Environment(object):
     def __init__(self, rootdir, loaders=None, cache=None):
@@ -23,9 +20,3 @@ class Environment(object):
 
     def resolve_path(self, path):
         return os.path.join(self.rootdir, path)
-
-    def render(self, template_filename):
-        return Renderer(self).process(template_filename)
-
-    def get_deps(self, template_filename):
-        return DependencyDetector(self).process(template_filename)

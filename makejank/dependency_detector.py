@@ -64,7 +64,7 @@ class DependencyDetector(TemplateProcessor):
         # jinja2 does not check for this, handled by python recursion limit.
         # So for now, allow that to go through.
         for dep in visitor.deps:
-            self.deps |= self.env.get_deps(dep)
+            self.deps |= DependencyDetector(self.env).process(dep)
 
         self._getting_deps = False
         return self.deps

@@ -8,7 +8,7 @@ from caches import FilesystemCache
 
 class Makejank(object):
 
-    def __init__(self, kwargs):
+    def __init__(self, **kwargs):
         if kwargs['cache_dir'] is None:
             cache = None
         else:
@@ -91,7 +91,7 @@ def main():
         'cache_dir' : cache_dir,
     }
 
-    makejank = Makejank(kwargs)
+    makejank = Makejank(**kwargs)
     source_path = os.path.join(os.getcwd(), args.source)
 
     if args.deps:

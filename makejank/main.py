@@ -19,6 +19,7 @@ class Makejank(object):
             CSSLoader(),
             JSLoader(),
             ImgLoader(),
+            MakejankLoader(),
         ]
 
         rootdir = kwargs['base_dir']
@@ -31,10 +32,10 @@ class Makejank(object):
 
 
     def render(self, source_file):
-        return self.env.render(source_file)
+        return self.env.loader_manager.service(self.env, 'makejank', [source_file])
 
     def get_deps(self, source_file):
-        return self.env.get_deps(source_file)
+        return self.env.loader_manager.get_deps(self.env, 'makejank', [source_file])
 
 def main():
     import argparse

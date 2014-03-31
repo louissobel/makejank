@@ -48,6 +48,47 @@ class CacheMixin(object):
         r = cache.last_modified('key')
         self.assertIsNone(r)
 
+    def _type_check(self, v):
+        """
+        Can handle lots of types.
+        - tuples
+        - lists
+        - numbers
+        - dicts with string keys
+        - <containing eachother>
+
+        - Cache does NOT check this... TODO?
+        """
+        cache = self.get_cache()
+        cache.put('k', v)
+        r = cache.get('k')
+        self.assertEquals(r, v)
+
+    def test_int(self):
+        self._type_check(9)
+
+    def test_float(self):
+        self._type_check(18.192)
+
+    def test_tuple(self):
+        self._type_check(('a', 'b'))
+
+    def test_list(self):
+        self._type_check(['a', 'b'])
+
+    def test_dict(self):
+        self._type_check({'a':1, 'b':2})
+
+    def test_complex_obj(self):
+        o = (
+            ['a', 9],
+            {
+                'b': (1, 'b'),
+                'fb': [1, 8.18, 'n', (6, (2.0,)), {'n':9}],
+            },
+        )
+        self._type_check(o)
+
 class TestMemoryCache(CacheMixin, unittest.TestCase):
 
     get_cache = lambda s : MemoryCache()

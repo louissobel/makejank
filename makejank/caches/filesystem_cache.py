@@ -8,10 +8,17 @@ Cache interface
 """
 import os.path
 import hashlib
+import cPickle as pickle
 
 class _CacheAccessException(IOError):
     """
     Internal Exception
+    """
+    pass
+
+class _CacheSerializationError(ValueError):
+    """
+    InternalException
     """
     pass
 
@@ -46,27 +53,64 @@ class FilesystemCache(object):
             raise ValueError("Unable to write and read from cachedir")
 
     def last_modified(self, key):
-        try:
-            times = self._filetimes(self._hash(key))
-        except _CacheAccessException:
+        times, which = self._try_access(self._filetimes, key)
+        if which is None:
             return None
-        else:
-            return times['modified']
+        return times['modified']
 
     def get(self, key):
-        try:
-            value = self._read_file(self._hash(key))
-        except _CacheAccessException:
+        value, which = self._try_access(self._read_file, key)
+        if which is None:
             return None
-        else:
+        elif which == 'string':
             return value
+        elif which == 'object':
+            try:
+                value = self._deserialize_object(value)
+            except _CacheSerializationError:
+                # value. TODO: warn?
+                return None
+            else:
+                return value
+        else:
+            raise AssertionError("bad type returned by _try_access")
 
     def put(self, key, value):
+        # if value is a basestring, just write it out
+        # otherwise
+        filename = self._hash(key)
+        if not isinstance(value, basestring):
+            filename = self._object_filename(filename)
+            try:
+                value = self._serialize_object(value)
+            except _CacheSerializationError:
+                # FINE, abort the put
+                # TODO warn???
+                return
+
+        # Now write out.
         try:
-            self._write_file(self._hash(key), value)
+            self._write_file(filename, value)
         except _CacheAccessException:
             # FINE, silently ignore.
             pass
+
+    def _try_access(self, method, key):
+        filename = self._hash(key)
+        # Try to run method on string version.
+        try:
+            result = method(filename)
+        except _CacheAccessException:
+            # Try to get the object version.
+            try:
+                result = method(self._object_filename(filename))
+            except _CacheAccessException:
+                # Give up. TODO: warn?
+                return None, None
+            else:
+                return result, 'object'
+        else:
+            return result, 'string'
 
     def _check_can_read_and_write(self):
         """
@@ -126,6 +170,21 @@ class FilesystemCache(object):
                 'created': int(st.st_ctime),
                 'modified': int(st.st_mtime),
             }
+
+    def _serialize_object(self, o):
+        try:
+            return pickle.dumps(o)
+        except pickle.PickleError:
+            raise _CacheSerializationError
+
+    def _deserialize_object(self, s):
+        try:
+            return pickle.loads(s)
+        except pickle.PickleError:
+            raise _CacheSerializationError
+
+    def _object_filename(self, filename):
+        return filename + '.object'
 
     def _hash(self, key):
         m = hashlib.md5()

@@ -89,6 +89,9 @@ class CacheMixin(object):
         )
         self._type_check(o)
 
+    def test_set(self):
+        self._type_check(set([1,2,3,'a','b','c']))
+
 class TestMemoryCache(CacheMixin, unittest.TestCase):
 
     get_cache = lambda s : MemoryCache()

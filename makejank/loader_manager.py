@@ -27,47 +27,71 @@ class LoaderManager(object):
             return loader
 
     def get_deps(self, env, loader_tag, args):
-        loader = self.get_loader(loader_tag) # Raises KeyError
-        deps = loader.dependencies(env, args)
-
-        # Check deps
-        ok, err = self.check_deps_types(deps)
-        if not ok:
-            raise TypeError(err)
-        return deps
+        return self._access_loader(env, loader_tag, args, get_deps=True)
 
     def service(self, env, loader_tag, args):
-        loader = self.get_loader(loader_tag) # Raises KeyError.
+        return self._access_loader(env, loader_tag, args)
+
+    def _access_loader(self, env, loader_tag, args, get_deps=False):
+        loader = self.get_loader(loader_tag) # Raises KeyError
 
         product = loader.product(env, args)
-        deps = loader.dependencies(env, args)
-
-        # Check that deps are all absolute.
-        ok, err = self.check_deps_types(deps)
-        if not ok:
-            raise TypeError(err)
-
-        # TODO: dont cache is signaled with product being None :/
-        #       or if we dont have a cache! is that right?
         dontcache = product is None or self.cache is None
 
-        if not dontcache:
-            # get last modified of product
-            product_last_modified = self.cache.last_modified(product)
-            stale = staleness.is_stale(product_last_modified, deps)
-
         if dontcache:
-            result = self._load_and_check(loader, env, args)
-        else:
-            if stale:
-                result = self._load_and_check(loader, env, args)
-                self.cache.put(product, result)
+            if get_deps:
+                return self._dependencies_and_check(loader, env, args)
             else:
-                # I don't need to type check here, because it only got
-                # _into_ the cache if it has the right type.
-                result = self.cache.get(product)
+                return self._load_and_check(loader, env, args)
 
-        return result
+        # Cache
+        deps_cache_key = product + ':dependencies' # TODO TODO TODO collisions :/
+        cached_deps = self.cache.get(deps_cache_key)
+
+        # Determine staleness.
+        if cached_deps is None:
+            # Because there were no cached deps,
+            # the product itself must not be cached,
+            # so stale is infinitely True.
+            stale = True
+        else:
+            # The product will be stale if any of its dependencies have changed.
+            # The product will be fresh if none of its dependencies have changed.
+            product_last_modified = self.cache.last_modified(product)
+            # is_stale returns True if first arugment is None..
+            # so if the product_last_modified is None
+            # (the product is not in the cache)
+            # stale will be True.
+            stale = staleness.is_stale(product_last_modified, cached_deps)
+
+        # so stale means either
+        # (deps_cache_key \not\in cache) || (product \not\in cache)
+        if stale:
+            deps = self._dependencies_and_check(loader, env, args)
+            self.cache.put(deps_cache_key, deps)
+            if get_deps:
+                # Then we're done.
+                return deps
+            result = self._load_and_check(loader, env, args)
+            self.cache.put(product, result)
+            return result
+        else:
+            # The cached values do not need to be type checked
+            # because they will only be cached if they pass the
+            # type checks.
+            if get_deps:
+                # cached_deps will not be None, becuase if it is,
+                # that stale must also be True
+                return cached_deps
+
+            return self.cache.get(product)
+
+    def _dependencies_and_check(self, l, *args):
+        ds = l.dependencies(*args)
+        ok, err = self.check_deps_types(ds)
+        if not ok:
+            raise TypeError(err)
+        return ds
 
     def _load_and_check(self, l, *args):
         r = l.load(*args)

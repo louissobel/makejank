@@ -139,10 +139,23 @@ class TestServicePullsFromCache(unittest.TestCase):
         cache = TestingCache()
         lm = LoaderManager(cache)
         lm.register(TestLoader())
+        # Warm the cache.
+        lm.service(None, 'test', None)
         cache.put(TestLoader.PRODUCT_NAME, "tricked you")
         self.assertEqual(lm.service(None, 'test', None), "tricked you")
         self.assertEqual(cache.last_get, TestLoader.PRODUCT_NAME)
 
+
+class TestGetDepsBeforeProduct(unittest.TestCase):
+    """
+    test this interleaving
+    """
+    def runTest(self):
+        cache = TestingCache()
+        lm = LoaderManager(cache)
+        lm.register(TestLoader())
+        lm.get_deps(None, 'test', None)
+        self.assertEqual(lm.service(None, 'test', None), TestLoader.LOAD_RESULT)
 
 class TestServiceCacheStale(unittest.TestCase):
     """

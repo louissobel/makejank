@@ -8,5 +8,5 @@ class CSSLoader(FileLoader):
 
     tag = 'css'
 
-    def process_file_contents(self, contents):
+    def process_file_contents(self, contents, env, filename, kwargs):
         return CSS_TEMPLATE % contents

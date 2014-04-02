@@ -21,7 +21,7 @@ class FileLoader(BaseLoader):
         except IOError as e:
             raise ValueError("Error reading file %s: %s" % (pathname, e.strerror))
 
-        return self.process_file_contents(contents)
+        return self.process_file_contents(contents, env, filename, kwargs)
 
-    def process_file_contents(self, contents):
+    def process_file_contents(self, contents, env, filename, kwargs):
         return contents

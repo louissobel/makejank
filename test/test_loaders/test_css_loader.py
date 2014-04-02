@@ -19,7 +19,7 @@ class TestProcessContents(unittest.TestCase):
 
     def runTest(self):
         loader = CSSLoader()
-        result = loader.process_file_contents(self.STYLE)
+        result = loader.process_file_contents(self.STYLE, None, None, None)
 
         result_soup = BeautifulSoup(result)
         child_nodes = list(result_soup.children)

@@ -9,5 +9,5 @@ class JSLoader(FileLoader):
 
     tag = 'js'
 
-    def process_file_contents(self, contents):
+    def process_file_contents(self, contents, env, filename, kwargs):
         return SCRIPT_TEMPLATE % contents

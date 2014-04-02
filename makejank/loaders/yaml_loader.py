@@ -15,17 +15,18 @@ class YamlLoader(BaseLoader):
             # TODO: what error?
             raise ValueError('yaml loader cannot find yaml module')
 
-    def product(self, env, args):
+    def product(self, env, arg, **kwargs):
         return None
 
-    def dependencies(self, env, args):
-        filename = args[0]
+    def dependencies(self, env, filename, **kwargs):
         return set([env.resolve_path(filename)])
 
-    def load(self, env, args):
-        filename, _, aswhat = args
-        # filename 'as' aswhat
-        # TODO should `aswhat` be optional?
+    def load(self, env, filename, **kwargs):
+        aswhat = kwargs.get('as')
+        if aswhat is None:
+            raise TypeError('as= is required argument to yaml loader')
+        if not isinstance(aswhat, basestring):
+            raise TypeError('as argument to yaml loader must be basestring')
 
         pathname = env.resolve_path(filename)
         try:

@@ -25,6 +25,21 @@ good_yaml_expected = {
 
 env = Environment(rootdir='/')
 
+
+class TestProduct(unittest.TestCase):
+    def runTest(self):
+        loader = YamlLoader()
+        self.assertIsNone(loader.product(env, 'foobar'))
+
+
+class TestDependecies(unittest.TestCase):
+    def runTest(self):
+        loader = YamlLoader()
+        self.assertEquals(loader.dependencies(env, 'foobar'), set([
+            env.resolve_path('foobar')
+        ]))
+
+
 class TestOK(unittest.TestCase):
 
     def setUp(self):
@@ -34,11 +49,28 @@ class TestOK(unittest.TestCase):
 
     def runTest(self):
         loader = YamlLoader()
-        args = [self.tempfile.name, 'as', 'foobee']
+        arg = self.tempfile.name
+        kwargs = {'as':'foobee'}
         expected = ('foobee', good_yaml_expected)
-        result = loader.load(env, args)
+        result = loader.load(env, arg, **kwargs)
         self.assertEquals(result, expected)
 
+
+class TestNoAs(TestOK):
+    def runTest(self):
+        loader = YamlLoader()
+        arg = self.tempfile.name
+        with self.assertRaises(TypeError):
+            loader.load(env, arg)
+
+
+class TestBadAs(TestOK):
+    def runTest(self):
+        loader = YamlLoader()
+        arg = self.tempfile.name
+        kwargs = {'as':8}
+        with self.assertRaises(TypeError):
+            loader.load(env, arg, **kwargs)
 
 class TestCannotFindFile(unittest.TestCase):
 
@@ -46,9 +78,10 @@ class TestCannotFindFile(unittest.TestCase):
         loader = YamlLoader()
         filename = test.helpers.nonexistent_filename()
 
-        args = [filename, 'as', 'data']
+        arg = filename
+        kwargs = {'as':'data'}
         with self.assertRaises(ValueError) as e:
-            loader.load(env, args)
+            loader.load(env, arg, **kwargs)
 
 class TestMalformedYaml(unittest.TestCase):
 
@@ -59,9 +92,10 @@ class TestMalformedYaml(unittest.TestCase):
 
     def runTest(self):
         loader = YamlLoader()
-        args = [self.tempfile.name, 'as', 'foobee']
+        arg = self.tempfile.name
+        kwargs = {'as':'data'}
         with self.assertRaises(ValueError):
-            loader.load(env, args)
+            loader.load(env, arg, **kwargs)
 
 class TestNoYaml(unittest.TestCase):
     """

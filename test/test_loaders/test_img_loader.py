@@ -17,6 +17,14 @@ env = Environment(rootdir='/')
 
 TEST_IMG = test.helpers.test_datafile('example/blue_arrow.png')
 
+
+def parse_datauri(datauri):
+    # its a base64 encoded data uri
+    _, mimetype, _, data = re.split(r'[:;,]', datauri)
+    pure_data = re.sub(r'\s', '', data)
+    return mimetype, pure_data
+
+
 class TestLoad(unittest.TestCase):
 
     def runTest(self):
@@ -31,14 +39,23 @@ class TestLoad(unittest.TestCase):
         self.assertEqual(img_tag.name, 'img', "Result should be a img tag")
 
         src = img_tag['src']
-
-        # its a base64 encoded data uri
-        _, mimetype, _, data = re.split(r'[:;,]', src)
-        pure_data = re.sub(r'\s', '', data)
-
+        mimetype, data = parse_datauri(src)
         self.assertEqual(mimetype, 'image/png')
 
-        res_image = base64.b64decode(pure_data)
+        res_image = base64.b64decode(data)
         with open(TEST_IMG, 'rb') as i:
             source_image = i.read()
         self.assertEqual(res_image, source_image)
+
+
+class TestDefaultMimetype(unittest.TestCase):
+
+    def runTest(self):
+        t = tempfile.NamedTemporaryFile()
+        loader = ImgLoader()
+        result = loader.load(env, t.name, {})
+
+        src = list(BeautifulSoup(result).children)[0]['src'] # :/
+        mimetype, _ = parse_datauri(src)
+        self.assertEqual(mimetype, 'application/octet-stream')
+    

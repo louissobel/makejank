@@ -13,33 +13,13 @@ import test.helpers
 
 env = Environment(rootdir='/')
 
-class TestDeps(unittest.TestCase):
-    def runTest(self):
-        loader = CSSLoader()
-        self.assertEqual(loader.dependencies(env, 'foo', {}), set([
-            env.resolve_path('foo')
-        ]))
-
-
-class TestProduct(unittest.TestCase):
-    def runTest(self):
-        loader = CSSLoader()
-        self.assertIsNone(loader.product(env, 'foo', {}))
-
-
-class TestOK(unittest.TestCase):
+class TestProcessContents(unittest.TestCase):
 
     STYLE = 'a'
 
-    def setUp(self):
-        self.tempfile = tempfile.NamedTemporaryFile()
-        self.tempfile.write(self.STYLE)
-        self.tempfile.flush()
-
     def runTest(self):
         loader = CSSLoader()
-        filename = self.tempfile.name
-        result = loader.load(env, filename, {})
+        result = loader.process_file_contents(self.STYLE)
 
         result_soup = BeautifulSoup(result)
         child_nodes = list(result_soup.children)
@@ -50,12 +30,3 @@ class TestOK(unittest.TestCase):
 
         self.assertEqual(script_tag['type'], 'text/css', "Result should proper type")
         self.assertEqual(script_tag.text.strip(), self.STYLE)
-
-class TestCannotFindFile(unittest.TestCase) :
-
-    def runTest(self):
-        loader = CSSLoader()
-        filename = test.helpers.nonexistent_filename()
-
-        with self.assertRaises(ValueError) as e:
-            loader.load(env, filename, {})

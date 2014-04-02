@@ -1,25 +1,12 @@
-from . import BaseLoader
+from . import FileLoader
 
 CSS_TEMPLATE = """<style type="text/css">
 %s
 </style>"""
 
-class CSSLoader(BaseLoader):
+class CSSLoader(FileLoader):
 
     tag = 'css'
 
-    def product(self, env, filename, kwargs):
-        return None
-
-    def dependencies(self, env, filename, kwargs):
-        return set([env.resolve_path(filename)])
-
-    def load(self, env, filename, kwargs):
-        pathname = env.resolve_path(filename)
-        try:
-            with open(pathname) as f:
-                css = f.read()
-        except IOError as e:
-            raise ValueError("Error reading file %s: %s" % (pathname, e.strerror))
-
-        return CSS_TEMPLATE % css
+    def process_file_contents(self, contents):
+        return CSS_TEMPLATE % contents

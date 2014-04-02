@@ -15,17 +15,13 @@ class ImgLoader(BaseLoader):
 
     tag = 'img'
 
-    def product(self, env, args):
-        filename = args[0]
+    def product(self, env, filename, kwargs):
         return PRODUCT_NAME_TEMPLATE % filename
 
-    def dependencies(self, env, args):
-        filename = args[0]
+    def dependencies(self, env, filename, kwargs):
         return set([env.resolve_path(filename)])
 
-    def load(self, env, args):
-        filename = args[0]
-
+    def load(self, env, filename, kwargs):
         # Guess mime of filename.
         mime, _ = mimetypes.guess_type(filename)
         if mime is None:

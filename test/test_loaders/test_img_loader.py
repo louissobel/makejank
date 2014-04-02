@@ -21,8 +21,7 @@ class TestOK(unittest.TestCase):
 
     def runTest(self):
         loader = ImgLoader()
-        args = [TEST_IMG]
-        result = loader.load(env, args)
+        result = loader.load(env, TEST_IMG, {})
 
         result_soup = BeautifulSoup(result)
         child_nodes = list(result_soup.children)
@@ -49,19 +48,15 @@ class TestCannotFindFile(unittest.TestCase) :
     def runTest(self):
         loader = ImgLoader()
         filename = test.helpers.nonexistent_filename()
-
-        args = [filename]
         with self.assertRaises(ValueError) as e:
-            loader.load(env, args)
+            loader.load(env, filename, {})
 
 class TestDependencies(unittest.TestCase):
 
     def runTest(self):
         loader = ImgLoader()
         filename = test.helpers.nonexistent_filename()
-
-        args = [filename]
-        deps = loader.dependencies(env, args)
+        deps = loader.dependencies(env, filename, {})
         expected_deps = set(['/' + filename])
         self.assertEquals(deps, expected_deps)
 
@@ -70,8 +65,6 @@ class TestProduct(unittest.TestCase):
     def runTest(self):
         loader = ImgLoader()
         filename = test.helpers.nonexistent_filename()
-
-        args = [filename]
-        product = loader.product(env, args)
+        product = loader.product(env, filename, {})
         expected_product = "%s:base64_img_tag" % filename
         self.assertEquals(product, expected_product)

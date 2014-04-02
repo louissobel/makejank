@@ -13,6 +13,20 @@ import test.helpers
 
 env = Environment(rootdir='/')
 
+class TestDeps(unittest.TestCase):
+    def runTest(self):
+        loader = JSLoader()
+        self.assertEqual(loader.dependencies(env, 'foo', {}), set([
+            env.resolve_path('foo')
+        ]))
+
+
+class TestProduct(unittest.TestCase):
+    def runTest(self):
+        loader = JSLoader()
+        self.assertIsNone(loader.product(env, 'foo', {}))
+
+
 class TestOK(unittest.TestCase):
 
     SCRIPT = 'a'
@@ -24,8 +38,8 @@ class TestOK(unittest.TestCase):
 
     def runTest(self):
         loader = JSLoader()
-        args = [self.tempfile.name]
-        result = loader.load(env, args)
+        filename = self.tempfile.name
+        result = loader.load(env, filename, {})
 
         result_soup = BeautifulSoup(result)
         child_nodes = list(result_soup.children)
@@ -43,6 +57,5 @@ class TestCannotFindFile(unittest.TestCase) :
         loader = JSLoader()
         filename = test.helpers.nonexistent_filename()
 
-        args = [filename]
         with self.assertRaises(ValueError) as e:
-            loader.load(env, args)
+            loader.load(env, filename, {})

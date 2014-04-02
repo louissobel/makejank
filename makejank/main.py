@@ -33,10 +33,10 @@ class Makejank(object):
 
 
     def render(self, source_file):
-        return self.env.loader_manager.service(self.env, 'makejank', [source_file], {})
+        return self.env.loader_manager.service(self.env, 'makejank', source_file, {})
 
     def get_deps(self, source_file):
-        return self.env.loader_manager.get_deps(self.env, 'makejank', [source_file], {})
+        return self.env.loader_manager.get_deps(self.env, 'makejank', source_file, {})
 
 def main():
     import argparse

@@ -9,16 +9,13 @@ class JSLoader(BaseLoader):
 
     tag = 'js'
 
-    def product(self, env, args):
+    def product(self, env, filename, kwargs):
         return None
 
-    def dependencies(self, env, args):
-        filename = args[0]
+    def dependencies(self, env, filename, kwargs):
         return set([env.resolve_path(filename)])
 
-    def load(self, env, args):
-        filename = args[0]
-
+    def load(self, env, filename, kwargs):
         pathname = env.resolve_path(filename)
         try:
             with open(pathname) as f:

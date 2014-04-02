@@ -10,6 +10,9 @@ import os.path
 import hashlib
 import cPickle as pickle
 
+import logging
+logger = logging.getLogger(__name__)
+
 class _CacheAccessException(IOError):
     """
     Internal Exception
@@ -55,45 +58,51 @@ class FilesystemCache(object):
     def last_modified(self, key):
         times, which = self._try_access(self._filetimes, key)
         if which is None:
-            return None
-        return times['modified']
+            result = None
+        else:
+            result = times['modified']
+
+        logger.debug("LAST_MODIFIED %s -> %s", key, str(result))
+        return result
 
     def get(self, key):
         value, which = self._try_access(self._read_file, key)
         if which is None:
-            return None
+            result = None
         elif which == 'string':
-            return value
+            result = value
         elif which == 'object':
             try:
                 value = self._deserialize_object(value)
             except _CacheSerializationError:
-                # value. TODO: warn?
-                return None
+                logger.warn("GET silently failing deserializing %s" % key)
+                result = None
             else:
-                return value
+                result = value
         else:
             raise AssertionError("bad type returned by _try_access")
 
+        logger.debug("GET %s -> %.40r", key, result)
+        return result
+
     def put(self, key, value):
-        # if value is a basestring, just write it out
-        # otherwise
         filename = self._hash(key)
         if not isinstance(value, basestring):
             filename = self._object_filename(filename)
             try:
                 value = self._serialize_object(value)
             except _CacheSerializationError:
-                # FINE, abort the put
-                # TODO warn???
+                logger.warn("PUT silently failing serializing %s: %.40r", key, value)
                 return
 
         # Now write out.
         try:
             self._write_file(filename, value)
         except _CacheAccessException:
-            # FINE, silently ignore.
-            pass
+            logger.warn("PUT silently failing writing %s (%s: %.40r)", filename, key, value)
+            return
+
+        logger.debug("PUT %s %.40r", key, value)
 
     def _try_access(self, method, key):
         filename = self._hash(key)

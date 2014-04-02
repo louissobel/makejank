@@ -1,6 +1,7 @@
 import sys
 import os
 import os.path
+import logging
 
 import environment
 from loaders import *
@@ -39,6 +40,7 @@ class Makejank(object):
 
 def main():
     import argparse
+    logging.basicConfig(level=logging.INFO)
 
     parser = argparse.ArgumentParser(
         description='Render a makejank template.',
@@ -81,7 +83,19 @@ def main():
         help="Directory for the cache. Absolute or relative to BASE_DIR"
     )
 
+    # Misc.
+    parser.add_argument(
+        '-v',
+        '--verbose',
+        action='store_true',
+        default=False,
+        help="Verbose output on stderr",
+    )
+
     args = parser.parse_args()
+
+    if args.verbose:
+        logging.getLogger().setLevel(logging.DEBUG)
 
     base_dir = os.path.join(os.getcwd(), args.base_dir) if args.base_dir else os.getcwd()
     cache_dir = None if args.no_cache else os.path.join(base_dir, args.cache_dir)

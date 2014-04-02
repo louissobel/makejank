@@ -14,40 +14,40 @@ class TestLoader(object):
     LOAD_RESULT = "test product contents"
     PRODUCT_NAME = "test_product"
 
-    def product(self, env, arg):
+    def product(self, env, arg, kwargs):
         return self.PRODUCT_NAME
 
-    def dependencies(self, env, arg):
+    def dependencies(self, env, arg, kwargs):
         # No Deps
         return set()
 
-    def load(self, env, arg):
+    def load(self, env, arg, kwargs):
         return self.LOAD_RESULT
 
 class TestLoaderWithNonexistentDependency(TestLoader):
-    def dependencies(self, env, args):
+    def dependencies(self, env, args, kwargs):
         return set(['/' + test.helpers.nonexistent_filename()])
 
 
 class TestLoaderNoCache(TestLoader):
-    def product(self, env, args):
+    def product(self, env, args, kwargs):
         return None
 
 
 class TestLoaderArg(TestLoader):
-    def load(self, env, arg):
+    def load(self, env, arg, kwargs):
         return arg
 
 
 class TestLoaderKwarg(TestLoader):
-    def product(self, env, arg, result):
+    def product(self, env, arg, kwargs):
         return self.PRODUCT_NAME
 
-    def dependencies(self, env, arg, result):
+    def dependencies(self, env, arg, kwargs):
         return set()
 
-    def load(self, env, arg, result):
-        return result
+    def load(self, env, arg, kwargs):
+        return kwargs['result']
 
 class TestGetLoader(unittest.TestCase):
 

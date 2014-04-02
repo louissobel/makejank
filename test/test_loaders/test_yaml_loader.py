@@ -29,13 +29,13 @@ env = Environment(rootdir='/')
 class TestProduct(unittest.TestCase):
     def runTest(self):
         loader = YamlLoader()
-        self.assertIsNone(loader.product(env, 'foobar'))
+        self.assertIsNone(loader.product(env, 'foobar', {}))
 
 
 class TestDependecies(unittest.TestCase):
     def runTest(self):
         loader = YamlLoader()
-        self.assertEquals(loader.dependencies(env, 'foobar'), set([
+        self.assertEquals(loader.dependencies(env, 'foobar', {}), set([
             env.resolve_path('foobar')
         ]))
 
@@ -52,7 +52,7 @@ class TestOK(unittest.TestCase):
         arg = self.tempfile.name
         kwargs = {'as':'foobee'}
         expected = ('foobee', good_yaml_expected)
-        result = loader.load(env, arg, **kwargs)
+        result = loader.load(env, arg, kwargs)
         self.assertEquals(result, expected)
 
 
@@ -61,7 +61,7 @@ class TestNoAs(TestOK):
         loader = YamlLoader()
         arg = self.tempfile.name
         with self.assertRaises(TypeError):
-            loader.load(env, arg)
+            loader.load(env, arg, {})
 
 
 class TestBadAs(TestOK):
@@ -70,7 +70,7 @@ class TestBadAs(TestOK):
         arg = self.tempfile.name
         kwargs = {'as':8}
         with self.assertRaises(TypeError):
-            loader.load(env, arg, **kwargs)
+            loader.load(env, arg, kwargs)
 
 class TestCannotFindFile(unittest.TestCase):
 
@@ -81,7 +81,7 @@ class TestCannotFindFile(unittest.TestCase):
         arg = filename
         kwargs = {'as':'data'}
         with self.assertRaises(ValueError) as e:
-            loader.load(env, arg, **kwargs)
+            loader.load(env, arg, kwargs)
 
 class TestMalformedYaml(unittest.TestCase):
 
@@ -95,7 +95,7 @@ class TestMalformedYaml(unittest.TestCase):
         arg = self.tempfile.name
         kwargs = {'as':'data'}
         with self.assertRaises(ValueError):
-            loader.load(env, arg, **kwargs)
+            loader.load(env, arg, kwargs)
 
 class TestNoYaml(unittest.TestCase):
     """

@@ -45,7 +45,7 @@ class LoaderManager(object):
         )
         loader = self.get_loader(loader_tag) # Raises KeyError
 
-        product = loader.product(env, arg, **kwargs)
+        product = loader.product(env, arg, kwargs)
         dontcache = product is None or self.cache is None
 
         if dontcache:
@@ -114,14 +114,14 @@ class LoaderManager(object):
             return result
 
     def _dependencies_and_check(self, l, env, arg, kwargs):
-        ds = l.dependencies(env, arg, **kwargs)
+        ds = l.dependencies(env, arg, kwargs)
         ok, err = self.check_deps_types(ds)
         if not ok:
             raise TypeError(err)
         return ds
 
     def _load_and_check(self, l, env, arg, kwargs):
-        r = l.load(env, arg, **kwargs)
+        r = l.load(env, arg, kwargs)
         ok, err = self.check_load_result_type(r)
         if not ok:
             raise TypeError(err)

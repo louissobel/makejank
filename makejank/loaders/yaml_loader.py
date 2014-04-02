@@ -15,13 +15,13 @@ class YamlLoader(BaseLoader):
             # TODO: what error?
             raise ValueError('yaml loader cannot find yaml module')
 
-    def product(self, env, arg, **kwargs):
+    def product(self, env, arg, kwargs):
         return None
 
-    def dependencies(self, env, filename, **kwargs):
+    def dependencies(self, env, filename, kwargs):
         return set([env.resolve_path(filename)])
 
-    def load(self, env, filename, **kwargs):
+    def load(self, env, filename, kwargs):
         aswhat = kwargs.get('as')
         if aswhat is None:
             raise TypeError('as= is required argument to yaml loader')

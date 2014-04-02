@@ -2,22 +2,36 @@
 Simple base loader
 """
 
+def _deterministic_dict_string(d):
+    """
+    Returns a deterministic string representation of dict
+    """
+    parts = []
+    for k in sorted(d.keys()):
+        parts.append("%r:%r" % (k, d[k]))
+    return '{%s}' % ','.join(parts)
+
 class BaseLoader(object):
 
-    def product(self, env, args, kwargs):
+    CACHE_RESULT = True
+
+    def product(self, env, arg, kwargs):
         """
-        Abstract. A string uniquely identifying the product of this
+        A string uniquely identifying the product of this
         (for the cache). Return None for no-cache
         """
-        raise NotImplemented
+        if self.CACHE_RESULT:
+            return "%s:%s:%s" % (self.tag, arg, _deterministic_dict_string(kwargs))
+        else:
+            return None
 
-    def dependencies(self, env, args, kwargs):
+    def dependencies(self, env, arg, kwargs):
         """
         Abstract. What dependencies does this have?
         """
         raise NotImplemented
 
-    def load(self, env, args, kwargs):
+    def load(self, env, arg, kwargs):
         """
         Abstract. env is a environment.Environment object
         args is a list of arguments from jinja template

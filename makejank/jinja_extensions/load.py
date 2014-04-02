@@ -47,30 +47,54 @@ class LoadExtension(Extension):
             )
         load_type = load_type.name
 
-        args = []
-        while parser.stream.current.type != 'block_end':
-            args.append(parser.parse_expression())
+        # First arg is simple expression, and is optional.
+        if parser.stream.current.type == 'block_end':
+            first_arg_node = None
+        else:
+            first_arg_node = parser.parse_expression()
 
-        # check that args is either Const or Name
-        s_args = []
-        for arg in args:
-            if isinstance(arg, jinja2.nodes.Const):
-                s_args.append(arg.value)
-            elif isinstance(arg, jinja2.nodes.Name):
-                s_args.append(arg.name)
-            else:
-                raise jinja2.TemplateSyntaxError(
-                    "Arguments to load must be strings or bare keywords. Got %s" % type(arg).__name__,
-                    lineno,
-                    parser.name,
-                    parser.filename,
-                )
+        kwargs_list = []
+        while parser.stream.current.type != 'block_end':
+            if kwargs_list:
+                parser.stream.expect('comma')
+            target = parser.parse_assign_target(name_only=True)
+            parser.stream.expect('assign')
+            expression = parser.parse_expression()
+            kwargs_list.append((target, expression))
+
+        if first_arg_node is None:
+            first_arg = None
+        else:
+            first_arg = self._get_value_or_raise(first_arg_node, lineno, parser)
+
+        kwargs = {}
+        for k_node, v_node in kwargs_list:
+            # kNode will be a Name, asserted by name_only option when parsed.
+            k = k_node.name
+            v = self._get_value_or_raise(v_node, lineno, parser)
+            kwargs[k] = v
 
         try:
-            node = self.environment.makejank_load_callback(load_type, s_args)
+            node = self.environment.makejank_load_callback(load_type, first_arg, kwargs)
         except (TypeError, ValueError) as e:
             raise jinja2.TemplateAssertionError(e.message, lineno, parser.name, parser.filename)
         except SyntaxError as e:
             raise jinja2.TemplateSyntaxError(e.message, lineno, parser.name, parser.filename)
         # Let other exceptions bubble up.
         return node
+
+    def _get_value_or_raise(self, node, lineno, parser):
+        """
+        Asserts that node is either a Const or Name
+        """
+        if isinstance(node, jinja2.nodes.Const):
+            return node.value
+        elif isinstance(node, jinja2.nodes.Name):
+            return node.name
+        else:
+            raise jinja2.TemplateSyntaxError(
+                "Arguments to load must be strings or bare keywords. Got %s" % type(node).__name__,
+                lineno,
+                parser.name,
+                parser.filename,
+            )

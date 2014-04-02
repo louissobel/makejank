@@ -17,7 +17,7 @@ env = Environment(rootdir='/')
 
 TEST_IMG = test.helpers.test_datafile('example/blue_arrow.png')
 
-class TestOK(unittest.TestCase):
+class TestLoad(unittest.TestCase):
 
     def runTest(self):
         loader = ImgLoader()
@@ -42,29 +42,3 @@ class TestOK(unittest.TestCase):
         with open(TEST_IMG, 'rb') as i:
             source_image = i.read()
         self.assertEqual(res_image, source_image)
-
-class TestCannotFindFile(unittest.TestCase) :
-
-    def runTest(self):
-        loader = ImgLoader()
-        filename = test.helpers.nonexistent_filename()
-        with self.assertRaises(ValueError) as e:
-            loader.load(env, filename, {})
-
-class TestDependencies(unittest.TestCase):
-
-    def runTest(self):
-        loader = ImgLoader()
-        filename = test.helpers.nonexistent_filename()
-        deps = loader.dependencies(env, filename, {})
-        expected_deps = set(['/' + filename])
-        self.assertEquals(deps, expected_deps)
-
-class TestProduct(unittest.TestCase):
-
-    def runTest(self):
-        loader = ImgLoader()
-        filename = test.helpers.nonexistent_filename()
-        product = loader.product(env, filename, {})
-        expected_product = "%s:base64_img_tag" % filename
-        self.assertEquals(product, expected_product)

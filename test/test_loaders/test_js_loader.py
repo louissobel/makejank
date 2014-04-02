@@ -13,33 +13,14 @@ import test.helpers
 
 env = Environment(rootdir='/')
 
-class TestDeps(unittest.TestCase):
-    def runTest(self):
-        loader = JSLoader()
-        self.assertEqual(loader.dependencies(env, 'foo', {}), set([
-            env.resolve_path('foo')
-        ]))
 
-
-class TestProduct(unittest.TestCase):
-    def runTest(self):
-        loader = JSLoader()
-        self.assertIsNone(loader.product(env, 'foo', {}))
-
-
-class TestOK(unittest.TestCase):
+class TestProcessContents(unittest.TestCase):
 
     SCRIPT = 'a'
 
-    def setUp(self):
-        self.tempfile = tempfile.NamedTemporaryFile()
-        self.tempfile.write(self.SCRIPT)
-        self.tempfile.flush()
-
     def runTest(self):
         loader = JSLoader()
-        filename = self.tempfile.name
-        result = loader.load(env, filename, {})
+        result = loader.process_file_contents(self.SCRIPT)
 
         result_soup = BeautifulSoup(result)
         child_nodes = list(result_soup.children)
@@ -50,12 +31,3 @@ class TestOK(unittest.TestCase):
 
         self.assertEqual(script_tag['type'], 'text/javascript', "Result should proper type")
         self.assertEqual(script_tag.text.strip(), self.SCRIPT)
-
-class TestCannotFindFile(unittest.TestCase) :
-
-    def runTest(self):
-        loader = JSLoader()
-        filename = test.helpers.nonexistent_filename()
-
-        with self.assertRaises(ValueError) as e:
-            loader.load(env, filename, {})

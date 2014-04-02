@@ -1,26 +1,13 @@
-from . import BaseLoader
+from . import FileLoader
 
 SCRIPT_TEMPLATE = """<script type="text/javascript">
 %s
 </script>"""
 
 
-class JSLoader(BaseLoader):
+class JSLoader(FileLoader):
 
     tag = 'js'
 
-    def product(self, env, filename, kwargs):
-        return None
-
-    def dependencies(self, env, filename, kwargs):
-        return set([env.resolve_path(filename)])
-
-    def load(self, env, filename, kwargs):
-        pathname = env.resolve_path(filename)
-        try:
-            with open(pathname) as f:
-                script = f.read()
-        except IOError as e:
-            raise ValueError("Error reading file %s: %s" % (pathname, e.strerror))
-
-        return SCRIPT_TEMPLATE % script
+    def process_file_contents(self, contents):
+        return SCRIPT_TEMPLATE % contents

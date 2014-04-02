@@ -14,23 +14,40 @@ class TestLoader(object):
     LOAD_RESULT = "test product contents"
     PRODUCT_NAME = "test_product"
 
-    def product(self, env, args):
+    def product(self, env, arg):
         return self.PRODUCT_NAME
 
-    def dependencies(self, env, args):
+    def dependencies(self, env, arg):
         # No Deps
         return set()
 
-    def load(self, env, args):
+    def load(self, env, arg):
         return self.LOAD_RESULT
 
 class TestLoaderWithNonexistentDependency(TestLoader):
     def dependencies(self, env, args):
         return set(['/' + test.helpers.nonexistent_filename()])
 
+
 class TestLoaderNoCache(TestLoader):
     def product(self, env, args):
         return None
+
+
+class TestLoaderArg(TestLoader):
+    def load(self, env, arg):
+        return arg
+
+
+class TestLoaderKwarg(TestLoader):
+    def product(self, env, arg, result):
+        return self.PRODUCT_NAME
+
+    def dependencies(self, env, arg, result):
+        return set()
+
+    def load(self, env, arg, result):
+        return result
 
 class TestGetLoader(unittest.TestCase):
 
@@ -118,7 +135,21 @@ class TestService(unittest.TestCase):
         cache = TestingCache()
         lm = LoaderManager(cache)
         lm.register(TestLoader())
-        self.assertEqual(lm.service(None, 'test', None), TestLoader.LOAD_RESULT)
+        self.assertEqual(lm.service(None, 'test', None, {}), TestLoader.LOAD_RESULT)
+
+
+class TestServiceArg(unittest.TestCase):
+    def runTest(self):
+        lm = LoaderManager()
+        lm.register(TestLoaderArg())
+        self.assertEqual(lm.service(None, 'test', 'a', {}), 'a')
+
+
+class TestServiceKwarg(unittest.TestCase):
+    def runTest(self):
+        lm = LoaderManager()
+        lm.register(TestLoaderKwarg())
+        self.assertEqual(lm.service(None, 'test', None, {'result':'a'}), 'a')
 
 
 class TestServiceWithoutCache(unittest.TestCase):
@@ -128,7 +159,7 @@ class TestServiceWithoutCache(unittest.TestCase):
     def runTest(self):
         lm = LoaderManager()
         lm.register(TestLoader())
-        self.assertEqual(lm.service(None, 'test', None), TestLoader.LOAD_RESULT)
+        self.assertEqual(lm.service(None, 'test', None, {}), TestLoader.LOAD_RESULT)
 
 
 class TestServicePullsFromCache(unittest.TestCase):
@@ -140,9 +171,9 @@ class TestServicePullsFromCache(unittest.TestCase):
         lm = LoaderManager(cache)
         lm.register(TestLoader())
         # Warm the cache.
-        lm.service(None, 'test', None)
+        lm.service(None, 'test', None, {})
         cache.put(TestLoader.PRODUCT_NAME, "tricked you")
-        self.assertEqual(lm.service(None, 'test', None), "tricked you")
+        self.assertEqual(lm.service(None, 'test', None, {}), "tricked you")
         self.assertEqual(cache.last_get, TestLoader.PRODUCT_NAME)
 
 
@@ -154,8 +185,8 @@ class TestGetDepsBeforeProduct(unittest.TestCase):
         cache = TestingCache()
         lm = LoaderManager(cache)
         lm.register(TestLoader())
-        lm.get_deps(None, 'test', None)
-        self.assertEqual(lm.service(None, 'test', None), TestLoader.LOAD_RESULT)
+        lm.get_deps(None, 'test', None, {})
+        self.assertEqual(lm.service(None, 'test', None, {}), TestLoader.LOAD_RESULT)
 
 class TestServiceCacheStale(unittest.TestCase):
     """
@@ -168,7 +199,7 @@ class TestServiceCacheStale(unittest.TestCase):
         lm.register(TestLoaderWithNonexistentDependency())
         cache.put(TestLoader.PRODUCT_NAME, "tricked you")
         # Make sure it ignores the "tricked you" in the cache.
-        self.assertEqual(lm.service(None, 'test', None), TestLoader.LOAD_RESULT)
+        self.assertEqual(lm.service(None, 'test', None, {}), TestLoader.LOAD_RESULT)
         self.assertEqual(cache.last_put, (TestLoader.PRODUCT_NAME, TestLoader.LOAD_RESULT))
 
 class TestServiceNoCache(unittest.TestCase):
@@ -179,8 +210,7 @@ class TestServiceNoCache(unittest.TestCase):
         cache = TestingCache()
         lm = LoaderManager(cache)
         lm.register(TestLoaderNoCache())
-        self.assertEqual(lm.service(None, 'test', None), TestLoader.LOAD_RESULT)
+        self.assertEqual(lm.service(None, 'test', None, {}), TestLoader.LOAD_RESULT)
         self.assertEqual(cache.last_put, None)
         self.assertEqual(cache.last_get, None)
 
-    

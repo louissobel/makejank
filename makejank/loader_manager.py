@@ -29,27 +29,33 @@ class LoaderManager(object):
         else:
             return loader
 
-    def get_deps(self, env, loader_tag, args):
-        return self._access_loader(env, loader_tag, args, get_deps=True)
+    def get_deps(self, env, loader_tag, arg, kwargs):
+        return self._access_loader(env, loader_tag, arg, kwargs, get_deps=True)
 
-    def service(self, env, loader_tag, args):
-        return self._access_loader(env, loader_tag, args)
+    def service(self, env, loader_tag, arg, kwargs):
+        return self._access_loader(env, loader_tag, arg, kwargs)
 
-    def _access_loader(self, env, loader_tag, args, get_deps=False):
-        logger.debug("Accessing loader %s, args=%r, get_deps=%r", loader_tag, args, get_deps)
+    def _access_loader(self, env, loader_tag, arg, kwargs, get_deps=False):
+        logger.debug(
+            "Accessing loader %s, arg=%r, kwargs=%r, get_deps=%r",
+            loader_tag,
+            arg,
+            kwargs,
+            get_deps,
+        )
         loader = self.get_loader(loader_tag) # Raises KeyError
 
-        product = loader.product(env, args)
+        product = loader.product(env, arg, **kwargs)
         dontcache = product is None or self.cache is None
 
         if dontcache:
             logger.debug("Skipping cache (product=%r, hascache=%r)", product, self.cache is None)
             if get_deps:
-                deps = self._dependencies_and_check(loader, env, args)
+                deps = self._dependencies_and_check(loader, env, arg, kwargs)
                 logger.debug("Got deps: %r", deps)
                 return deps
             else:
-                result = self._load_and_check(loader, env, args)
+                result = self._load_and_check(loader, env, arg, kwargs)
                 logger.debug("Got result: %.40r...", result)
                 return result
 
@@ -83,13 +89,13 @@ class LoaderManager(object):
         # so stale means either
         # (deps_cache_key \not\in cache) || (product \not\in cache)
         if stale:
-            deps = self._dependencies_and_check(loader, env, args)
+            deps = self._dependencies_and_check(loader, env, arg, kwargs)
             logger.debug("Stale deps, recomputed to: %r", deps)
             self.cache.put(deps_cache_key, deps)
             if get_deps:
                 # Then we're done.
                 return deps
-            result = self._load_and_check(loader, env, args)
+            result = self._load_and_check(loader, env, arg, kwargs)
             self.cache.put(product, result)
             logger.debug("Stale result, recomputed to: %.40r...", result)
             return result
@@ -107,15 +113,15 @@ class LoaderManager(object):
             logger.debug("Cached result is fresh, returning: %.40r...", result)
             return result
 
-    def _dependencies_and_check(self, l, *args):
-        ds = l.dependencies(*args)
+    def _dependencies_and_check(self, l, env, arg, kwargs):
+        ds = l.dependencies(env, arg, **kwargs)
         ok, err = self.check_deps_types(ds)
         if not ok:
             raise TypeError(err)
         return ds
 
-    def _load_and_check(self, l, env, args):
-        r = l.load(env, args)
+    def _load_and_check(self, l, env, arg, kwargs):
+        r = l.load(env, arg, **kwargs)
         ok, err = self.check_load_result_type(r)
         if not ok:
             raise TypeError(err)

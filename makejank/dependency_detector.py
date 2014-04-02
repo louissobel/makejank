@@ -15,7 +15,7 @@ class DependencyDetector(TemplateProcessor):
         TemplateProcessor.__init__(self, *args, **kwargs)
         self._getting_deps = False
 
-    def load_callback(self, load_type, args):
+    def load_callback(self, load_type, arg, kwargs):
         """
         mutates list set deps by adding to it from loader_manager queries
         """
@@ -23,7 +23,8 @@ class DependencyDetector(TemplateProcessor):
             self.deps |= self.env.loader_manager.get_deps(
                 self.env,
                 load_type,
-                args,
+                arg,
+                kwargs,
             )
         except KeyError:
             raise TypeError("Unable to find loader with type %s" % load_type)

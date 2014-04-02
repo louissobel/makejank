@@ -7,13 +7,13 @@ from template_processor import TemplateProcessor
 
 class Renderer(TemplateProcessor):
 
-    def load_callback(self, load_type, args):
+    def load_callback(self, load_type, arg, kwargs):
         """
         Callback called by Load node while it is being parsed
          - calls out to LoaderManager to get a result
         """
         try:
-            res = self.env.loader_manager.service(self.env, load_type, args)
+            res = self.env.loader_manager.service(self.env, load_type, arg, kwargs)
         except KeyError:
             raise TypeError("Unable to find loader of type %s" % load_type)
         except TypeError as e:

@@ -25,7 +25,7 @@ class TemplateProcessor(object):
         self.jinja_env.makejank_load_callback = self.load_callback
         self.env = env
 
-    def load_callback(self, load_type, args):
+    def load_callback(self, load_type, arg, kwargs):
         raise NotImplementedError
 
     def process(self, template_filename):

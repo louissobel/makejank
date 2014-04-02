@@ -1,5 +1,6 @@
 from base_loader import BaseLoader
 
+from file_loader import FileLoader
 from yaml_loader import YamlLoader
 from css_loader import CSSLoader
 from js_loader import JSLoader

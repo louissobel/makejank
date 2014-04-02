@@ -26,20 +26,6 @@ good_yaml_expected = {
 env = Environment(rootdir='/')
 
 
-class TestProduct(unittest.TestCase):
-    def runTest(self):
-        loader = YamlLoader()
-        self.assertIsNone(loader.product(env, 'foobar', {}))
-
-
-class TestDependecies(unittest.TestCase):
-    def runTest(self):
-        loader = YamlLoader()
-        self.assertEquals(loader.dependencies(env, 'foobar', {}), set([
-            env.resolve_path('foobar')
-        ]))
-
-
 class TestOK(unittest.TestCase):
 
     def setUp(self):
@@ -72,16 +58,6 @@ class TestBadAs(TestOK):
         with self.assertRaises(TypeError):
             loader.load(env, arg, kwargs)
 
-class TestCannotFindFile(unittest.TestCase):
-
-    def runTest(self):
-        loader = YamlLoader()
-        filename = test.helpers.nonexistent_filename()
-
-        arg = filename
-        kwargs = {'as':'data'}
-        with self.assertRaises(ValueError) as e:
-            loader.load(env, arg, kwargs)
 
 class TestMalformedYaml(unittest.TestCase):
 
@@ -96,6 +72,7 @@ class TestMalformedYaml(unittest.TestCase):
         kwargs = {'as':'data'}
         with self.assertRaises(ValueError):
             loader.load(env, arg, kwargs)
+
 
 class TestNoYaml(unittest.TestCase):
     """

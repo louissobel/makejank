@@ -1,11 +1,13 @@
 """
 Loader to load and parse a YAML file
 """
-from . import BaseLoader
+from . import FileLoader
 
-class YamlLoader(BaseLoader):
+class YamlLoader(FileLoader):
 
     tag = 'yaml'
+
+    CACHE_RESULT = False
 
     def __init__(self):
         try:
@@ -15,12 +17,6 @@ class YamlLoader(BaseLoader):
             # TODO: what error?
             raise ValueError('yaml loader cannot find yaml module')
 
-    def product(self, env, arg, kwargs):
-        return None
-
-    def dependencies(self, env, filename, kwargs):
-        return set([env.resolve_path(filename)])
-
     def load(self, env, filename, kwargs):
         aswhat = kwargs.get('as')
         if aswhat is None:
@@ -28,12 +24,10 @@ class YamlLoader(BaseLoader):
         if not isinstance(aswhat, basestring):
             raise TypeError('as argument to yaml loader must be basestring')
 
-        pathname = env.resolve_path(filename)
+        contents = FileLoader.load(self, env, filename, kwargs)
+
         try:
-            with open(pathname) as f:
-                data = self.yaml.load(f.read())
-        except IOError as e:
-            raise ValueError("Error reading file %s: %s" % (pathname, e.strerror))
+            data = self.yaml.load(contents)
         except self.yaml.YAMLError as e:
             raise ValueError("Malformed yaml in %s: %s" % (filename, e.message))
 

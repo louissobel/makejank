@@ -6,6 +6,7 @@ import logging
 import environment
 from loaders import *
 from caches import FilesystemCache
+from renderer import Renderer
 
 class Makejank(object):
 
@@ -32,11 +33,22 @@ class Makejank(object):
         )
 
 
-    def render(self, source_file):
-        return self.env.loader_manager.service(self.env, 'makejank', source_file, {})
+    def render(self, loader_tag, arg, kwargs=None):
+        if kwargs is None:
+            kwargs = {}
+        return self.env.loader_manager.service(self.env, loader_tag, arg, kwargs)
 
-    def get_deps(self, source_file):
-        return self.env.loader_manager.get_deps(self.env, 'makejank', source_file, {})
+    def get_deps(self, loader_tag, arg, kwargs=None):
+        if kwargs is None:
+            kwargs = {}
+        return self.env.loader_manager.get_deps(self.env, loader_tag, arg, kwargs)
+
+    def load_string(self, args):
+        """
+        as if you had a template {% load args %}
+        """
+        template = "{% load " + args + " %}"
+        return Renderer(self.env).process(template)
 
 def main():
     import argparse
@@ -44,14 +56,15 @@ def main():
 
     parser = argparse.ArgumentParser(
         description='Render a makejank template.',
-        usage='%(prog)s [source | -t TARGET] [options]',
+        usage='%(prog)s [source | -t TARGET | --load STRING] [options]',
     )
 
-    # Two uses - 
+    # Three uses - 
     # with a jankfile and without, but whatever. for now no Jankfile.
     source_group = parser.add_argument_group(title="makejank source").add_mutually_exclusive_group(required=True)
     source_group.add_argument('source', nargs='?') # TODO
     source_group.add_argument('-t', '--target') # TODO (jankfile target)
+    source_group.add_argument('--load')
 
     parser.add_argument(
         '--deps',
@@ -106,13 +119,20 @@ def main():
     }
 
     makejank = Makejank(**kwargs)
-    source_path = os.path.join(os.getcwd(), args.source)
+    if args.source:
+        source_path = os.path.join(os.getcwd(), args.source)
 
-    if args.deps:
-        for dep in makejank.get_deps(source_path):
-            print dep
+        if args.deps:
+            for dep in makejank.get_deps('makejank', source_path):
+                print dep
+        else:
+            print makejank.render('makejank', source_path)
+
+    elif args.load:
+        print makejank.load_string(args.load)
     else:
-        print makejank.render(source_path)
+        # mode is jankfile
+        pass
 
 if __name__ == "__main__":
     main()

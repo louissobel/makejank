@@ -22,7 +22,7 @@ def setup_module():
 class TestDeps(unittest.TestCase):
     def runTest(self):
         # Heavily dependent on contents of page.
-        deps = mj.get_deps('example/page.html')
+        deps = mj.get_deps('makejank', 'example/page.html')
         self.assertEquals(deps, set(map(test.helpers.test_datafile, [
             'example/smiley.jpg',
             'example/base.html',
@@ -38,7 +38,7 @@ class TestRender(unittest.TestCase):
     def runTest(self):
         # For now, just test that it doesn't throw an error,
         # :/ jank.
-        rendered = mj.render('example/page.html')
+        rendered = mj.render('makejank', 'example/page.html')
 
 def teardown_module():
     global tempdir

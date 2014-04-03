@@ -38,15 +38,11 @@ class DependencyDetector(TemplateProcessor):
             # Sent up by a loader, re-raise.
             raise
 
-    def process(self, template_filename):
+    def process(self, source):
         if self._getting_deps is True:
             raise AssertionError("DependencyDetector is not reentrant. Create a new one")
         self._getting_deps = True
 
-        source, filename, _ = self.jinja_loader.get_source(
-            self.jinja_env,
-            template_filename,
-        )
         self.deps = set()
         tree = self.jinja_env.parse(source)
 
@@ -65,7 +61,7 @@ class DependencyDetector(TemplateProcessor):
         # jinja2 does not check for this, handled by python recursion limit.
         # So for now, allow that to go through.
         for dep in visitor.deps:
-            self.deps |= DependencyDetector(self.env).process(dep)
+            self.deps |= DependencyDetector(self.env).get_source_and_process(dep)
 
         self._getting_deps = False
         return self.deps

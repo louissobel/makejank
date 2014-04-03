@@ -28,7 +28,16 @@ class TemplateProcessor(object):
     def load_callback(self, load_type, arg, kwargs):
         raise NotImplementedError
 
-    def process(self, template_filename):
-        # TODO we also want to be able to render from a strign
-        # TODO we also want to be able to pass in data?
+    def get_source(self, template_filename):
+        source, _, _ = self.jinja_loader.get_source(
+            self.jinja_env,
+            template_filename,
+        )
+        return source
+
+    def get_source_and_process(self, template_filename):
+        source = self.get_source(template_filename)
+        return self.process(source)
+
+    def process(self, source):
         raise NotImplementedError

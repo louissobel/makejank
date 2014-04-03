@@ -38,6 +38,6 @@ class Renderer(TemplateProcessor):
         else:
             raise AssertionError("LoaderManager must disallow this!")
 
-    def process(self, template_filename):
-        t = self.jinja_env.get_template(template_filename)
+    def process(self, source):
+        t = self.jinja_env.from_string(source)
         return t.render()

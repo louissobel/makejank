@@ -14,7 +14,7 @@ class MakejankLoader(BaseLoader):
         return PRODUCT_NAME_TEMPLATE % filename
 
     def dependencies(self, env, filename, kwargs):
-        return DependencyDetector(env).process(filename)
+        return DependencyDetector(env).get_source_and_process(filename)
 
     def load(self, env, filename, kwargs):
-        return Renderer(env).process(filename)
+        return Renderer(env).get_source_and_process(filename)

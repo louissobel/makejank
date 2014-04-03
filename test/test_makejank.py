@@ -32,6 +32,7 @@ class TestDeps(unittest.TestCase):
             'example/script.js',
             'example/style.css',
             'example/data.yml',
+            'example/page.html',
         ])))
 
 class TestRender(unittest.TestCase):

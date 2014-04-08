@@ -1,6 +1,7 @@
 """
 class wrapping makejank environment
 """
+import os
 import os.path
 
 from loader_manager import LoaderManager
@@ -19,6 +20,8 @@ class Environment(object):
         if loaders is not None:
             for l in loaders:
                 self.loader_manager.register(l)
+
+        self.cwd = os.getcwd()
 
     def resolve_path(self, path):
         return os.path.join(self.rootdir, path)

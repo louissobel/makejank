@@ -12,6 +12,7 @@ from loaders import *
 from caches import FilesystemCache
 from renderer import Renderer
 from dependency_detector import DependencyDetector
+import jankfile_processing
 
 JANKMODE = 'jank'
 SOURCEMODE = 'source'
@@ -52,32 +53,15 @@ def main():
     elif mode == JANKMODE:
         # if target is selected, just build that one, otherwise build them all
         # TODO HANDLE A TARGET (multiple?)
-        # TODO should we check up-to-dateness of products
         # TODO handle get_deps of that target
+        # TODO send the target to STDOUT
+        # TODO should we check up-to-dateness of products
         jankfile = config['jankfile']
         output_dir = config['output_dir']
         # TODO create output dir if it does not exist?
 
-        # TODO this should be moved to a function
-        targets = jankfile.get('targets')
-        if not targets:
-            # TODO err log
-            print "No targets."
-        else:
-            for target in targets:
-                action = targets[target]
-                target_file = os.path.join(output_dir, target)
-                # TODO we have to make sure the directories exist all the way down.
-                start = time.time()
-                print "%s: %s..." % (target_file, action),
-
-                # TODO error handling
-                with open(target_file, 'w') as f:
-                    f.write(env.render_load_args(action))
-
-                print "ok",
-                done = time.time()
-                print "(%f)" % (done - start)
+        # TODO error handling?
+        jankfile_processing.process_jankfile(env, jankfile, output_dir)
     else:
         raise AssertionError("Mode none of the modes")
 

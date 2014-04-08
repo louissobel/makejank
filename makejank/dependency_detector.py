@@ -14,6 +14,7 @@ class DependencyDetector(TemplateProcessor):
     def __init__(self, *args, **kwargs):
         TemplateProcessor.__init__(self, *args, **kwargs)
         self._getting_deps = False
+        self.deps = None
 
     def load_callback(self, load_type, arg, kwargs):
         """
@@ -78,10 +79,10 @@ class DependencyVisitor(jinja2.visitor.NodeVisitor):
         if isinstance(template, jinja2.nodes.Name):
             # TODO: this needs to be a warning
             raise ValueError("Can only track string jinja deps")
-        if not isinstance(template, jinja2.nodes.Const):
+        if isinstance(template, jinja2.nodes.Const) and isinstance(template.value, basestring):
+            self.deps.add(template.value)
+        else:
             raise ValueError("Template in dep must be string...")
-
-        self.deps.add(template.value)
 
     visit_Extends = _extract_dep
     visit_Include = _extract_dep

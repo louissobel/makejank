@@ -26,7 +26,6 @@ test_base = []
 
 integration_regex = '|'.join([
     'test_integration',
-    'test_jankfile_processing',
     'test_makejank_loader',
 ])
 

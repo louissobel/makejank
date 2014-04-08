@@ -6,9 +6,16 @@ import tempfile
 import shutil
 import os.path
 
-from makejank.environment import Environment
-from makejank.loaders import FileLoader
 from makejank import jankfile_processing
+
+class MockEnv(object):
+
+    # For logging, doesn't matter what it is right now
+    cwd = '/'
+
+    # Just the methods needed to stub jankfile_processing
+    def render_load_args(self, string):
+        return string
 
 
 class JankfileProcessingMixin(object):
@@ -16,21 +23,10 @@ class JankfileProcessingMixin(object):
 
     def setUp(self):
         self.output_tempdir = tempfile.mkdtemp()
-        self.base_tempdir = tempfile.mkdtemp()
 
-        # Write foo and bar out
-        for fn, c in self.FILES:
-            with open(os.path.join(self.base_tempdir, fn), 'w') as f:
-                f.write(c)
-
-        self.env = Environment(
-            rootdir=self.base_tempdir,
-            cache=None,
-            loaders = [FileLoader()]
-        )
+        self.env = MockEnv()
 
     def tearDown(self):
-        shutil.rmtree(self.base_tempdir)
         shutil.rmtree(self.output_tempdir)
 
     def assertOutputFileContents(self, filename, contents):
@@ -49,8 +45,8 @@ class TestProcessJankfile(JankfileProcessingMixin, unittest.TestCase):
     def runTest(self):
         jankfile = {
             'targets': {
-                'foo': "file 'foo'",
-                'bar': "file 'bar'",
+                'foo': "a",
+                'bar': "b",
             },
         }
 
@@ -68,7 +64,7 @@ class TestProcessJankfileSingleTarget(JankfileProcessingMixin, unittest.TestCase
     def runTest(self):
         jankfile = {
             'targets': {
-                'foo': "file 'foo'",
+                'foo': "a",
             },
         }
 

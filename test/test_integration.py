@@ -1,39 +1,35 @@
 """
 Runs a makejank
+
+Doesnt actually shell out, rather, fakes sys.argv and calls main.main
 """
 import unittest
 import os
+import sys
 import os.path
 import tempfile
 import subprocess
 import shutil
 
-import makejank
+from makejank import main
 
 class IntegrationTestMixin(object):
 
     def setUp(self):
-        self.cwd = os.getcwd()
         self.tempdir = tempfile.mkdtemp()
 
-        newd = os.path.join(
-            os.path.dirname(os.path.abspath(makejank.__file__)),
-            '..',
-        )
-        os.chdir(newd)
-
     def tearDown(self):
-        os.chdir(self.cwd)
         shutil.rmtree(self.tempdir)
 
 
 class TestJankfile(IntegrationTestMixin, unittest.TestCase):
 
     def runTest(self):
-        command = "python -m makejank -j example/Jankfile --output-dir %s" % self.tempdir
+        command = "makejank -j example/Jankfile --output-dir %s" % self.tempdir
+        # should use shlex...
+        sys.argv = command.split(' ')
 
-        # use check output to capture
-        subprocess.check_output(command, stderr=subprocess.STDOUT, shell=True)
+        main.main()
 
         # Check it
         if not os.path.exists(os.path.join(self.tempdir, 'index.html')):

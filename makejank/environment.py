@@ -31,8 +31,8 @@ class Environment(object):
             return Renderer(self).process(string)
 
     def render_load_args(self, load_args, get_deps=False):
-        template = "{% load " + args + " %}"
-        return self.render_string(string, get_deps=get_deps)
+        template = "{% load " + load_args + " %}"
+        return self.render_string(template, get_deps=get_deps)
 
     def render_template(self, template_filename, get_deps=False):
         if get_deps:

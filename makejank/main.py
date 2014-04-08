@@ -3,6 +3,7 @@ import os
 import os.path
 import logging
 import argparse
+import time
 
 import yaml
 
@@ -20,88 +21,6 @@ DEFAULT_JANKFILE_NAME = 'Jankfile'
 DEFAULT_CACHE_DIR = '.makejank_cache'
 DEFAULT_OUTPUT_DIR = 'jank'
 
-class Makejank(object):
-
-    def __init__(self,
-        cache_dir,
-        base_dir,
-        mode,
-        source,
-        load,
-        output_dir,
-        jankfile,
-        target,
-        deps,
-    ):
-        cwd = os.getcwd()
-        if cache_dir is None:
-            cache = None
-        else:
-            cache = FilesystemCache(cache_dir)
-
-        loaders = [
-            YamlLoader(),
-            CSSLoader(),
-            JSLoader(),
-            ImgLoader(),
-            MakejankLoader(),
-        ]
-
-        rootdir = base_dir
-
-        self.env = environment.Environment(
-            rootdir=rootdir,
-            loaders=loaders,
-            cache=cache,
-        )
-
-        if mode == SOURCEMODE:
-            source_path = os.path.join(cwd, source)
-            if args.deps:
-                for dep in self.get_deps('makejank', source_path):
-                    print dep
-            else:
-                print self.render('makejank', source_path)
-        elif mode == LOADMODE:
-            if args.deps:
-                for dep in self.get_deps_load_string(load):
-                    print dep
-            else:
-                print self.render_load_string(load)
-        elif mode == JANKMODE:
-            # if target is selected, just build that one, otherwise build them all
-            print "JANKFILE WITH TARGETS"
-            print jankfile['targets']
-            print base_dir, cache_dir, output_dir
-        else:
-            raise AssertionError("Mode none of the modes")
-
-
-    def render(self, loader_tag, arg, kwargs=None):
-        if kwargs is None:
-            kwargs = {}
-        return self.env.loader_manager.service(self.env, loader_tag, arg, kwargs)
-
-    def get_deps(self, loader_tag, arg, kwargs=None):
-        if kwargs is None:
-            kwargs = {}
-        return self.env.loader_manager.get_deps(self.env, loader_tag, arg, kwargs)
-
-    def render_load_string(self, args):
-        """
-        as if you had a template {% load args %}
-        """
-        template = "{% load " + args + " %}"
-        # TODO - could handle deps here too, or at least should blow up.
-        return Renderer(self.env).process(template)
-
-    def get_deps_load_string(self, args):
-        """
-        as if you had a template {% load args %}
-        """
-        template = "{% load " + args + " %}"
-        # TODO - could handle deps here too, or at least should blow up.
-        return DependencyDetector(self.env).process(template)
 
 def main():
     logging.basicConfig(level=logging.INFO)
@@ -112,8 +31,55 @@ def main():
     if args.verbose:
         logging.getLogger().setLevel(logging.DEBUG)
 
-    kwargs = get_kwargs(args, parser)
-    Makejank(**kwargs)
+    config = get_config(args, parser)
+    env = get_env(config)
+
+    mode = config['mode']
+    if mode == SOURCEMODE or mode == LOADMODE:
+        get_deps = args.deps
+        if mode == SOURCEMODE:
+            source_path = os.path.join(cwd, source)
+            result = env.render_template(source_path, get_deps=get_deps)
+        else:
+            result = env.render_load_args(args.load, get_deps=get_deps)
+
+        if args.deps:
+            for dep in result:
+                print dep
+        else:
+            print result
+
+    elif mode == JANKMODE:
+        # if target is selected, just build that one, otherwise build them all
+        # TODO HANDLE A TARGET (multiple?)
+        # TODO should we check up-to-dateness of products
+        # TODO handle get_deps of that target
+        jankfile = config['jankfile']
+        output_dir = config['output_dir']
+        # TODO create output dir if it does not exist?
+
+        # TODO this should be moved to a function
+        targets = jankfile.get('targets')
+        if not targets:
+            # TODO err log
+            print "No targets."
+        else:
+            for target in targets:
+                action = targets[target]
+                target_file = os.path.join(output_dir, target)
+                # TODO we have to make sure the directories exist all the way down.
+                start = time.time()
+                print "%s: %s..." % (target_file, action),
+
+                # TODO error handling
+                with open(target_file, 'w') as f:
+                    f.write(env.render_load_args(action))
+
+                print "ok",
+                done = time.time()
+                print "(%f)" % (done - start)
+    else:
+        raise AssertionError("Mode none of the modes")
 
 def get_parser():
 
@@ -177,8 +143,8 @@ def get_parser():
     )
     return parser
 
-def get_kwargs(args, parser):
-    kwargs = {}
+def get_config(args, parser):
+    config = {}
 
     if args.source:
         mode = SOURCEMODE
@@ -186,7 +152,7 @@ def get_kwargs(args, parser):
         mode = LOADMODE
     else:
         mode = JANKMODE
-    kwargs['mode'] = mode
+    config['mode'] = mode
 
     # Enforce restrictions
     # - output dir only with jankfile
@@ -214,24 +180,24 @@ def get_kwargs(args, parser):
         # Make it empty
         jankfile = {}
 
-    kwargs['jankfile'] = jankfile
+    config['jankfile'] = jankfile
 
-    kwargs['target'] = args.target
-    kwargs['deps'] = args.deps
-    kwargs['source'] = args.source or None
-    kwargs['load'] = args.load
+    config['target'] = args.target
+    config['deps'] = args.deps
+    config['source'] = args.source or None
+    config['load'] = args.load
 
     # Determine base dir
-    kwargs['base_dir'] = determine_base_dir(kwargs, args)
-    kwargs['cache_dir'] = determine_cache_dir(kwargs, args)
-    kwargs['output_dir'] = determine_output_dir(kwargs, args)
+    config['base_dir'] = determine_base_dir(config, args)
+    config['cache_dir'] = determine_cache_dir(config, args)
+    config['output_dir'] = determine_output_dir(config, args)
 
-    return kwargs
+    return config
 
-def determine_base_dir(kwargs, args):
+def determine_base_dir(config, args):
     cwd = os.getcwd()
-    jankfile = kwargs['jankfile']
-    mode = kwargs['mode']
+    jankfile = config['jankfile']
+    mode = config['mode']
 
     if args.base_dir:
         return os.path.join(cwd, args.base_dir)
@@ -249,11 +215,11 @@ def determine_base_dir(kwargs, args):
             # Default to the cwd
             return cwd
 
-def determine_cache_dir(kwargs, args):
+def determine_cache_dir(config, args):
     cwd = os.getcwd()
-    base_dir = kwargs['base_dir']
-    jankfile = kwargs['jankfile']
-    mode = kwargs['mode']
+    base_dir = config['base_dir']
+    jankfile = config['jankfile']
+    mode = config['mode']
 
     if args.no_cache:
         return None
@@ -268,11 +234,11 @@ def determine_cache_dir(kwargs, args):
     else:
         return os.path.join(base_dir, DEFAULT_CACHE_DIR)
 
-def determine_output_dir(kwargs, args):
+def determine_output_dir(config, args):
     cwd = os.getcwd()
-    base_dir = kwargs['base_dir']
-    jankfile = kwargs['jankfile']
-    mode = kwargs['mode']
+    base_dir = config['base_dir']
+    jankfile = config['jankfile']
+    mode = config['mode']
 
     if args.output_dir:
         return os.path.join(cwd, args.output_dir)
@@ -282,6 +248,28 @@ def determine_output_dir(kwargs, args):
             return os.path.join(base_dir, jankfile.get('output_dir', DEFAULT_OUTPUT_DIR))
         else:
             return None
+
+def get_env(config):
+
+    loaders = [
+        YamlLoader(),
+        CSSLoader(),
+        JSLoader(),
+        ImgLoader(),
+        MakejankLoader(),
+    ]
+    # TODO additional loaders
+
+    if config['cache_dir'] is None:
+        cache = None
+    else:
+        cache = FilesystemCache(config['cache_dir'])
+
+    return environment.Environment(
+        rootdir=config['base_dir'],
+        loaders=loaders,
+        cache=cache,
+    )
 
 if __name__ == "__main__":
     main()

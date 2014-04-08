@@ -34,7 +34,7 @@ def null_except(**kwargs):
 def run(argstring):
     parser = main.get_parser()
     args = parser.parse_args(argstring.split(' '))
-    return main.get_kwargs(args, parser)
+    return main.get_config(args, parser)
 
 def print_dict(s):
     for k in sorted(s.keys()):

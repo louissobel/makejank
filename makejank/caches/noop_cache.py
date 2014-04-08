@@ -2,7 +2,7 @@
 A Fake Cache that doesn't do shit
 """
 
-class NoopCache(object):
+class NoopCache(object): # pragma: no cover
 
     def get(*args):
         return None

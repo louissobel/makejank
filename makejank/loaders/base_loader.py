@@ -29,12 +29,12 @@ class BaseLoader(object):
         """
         Abstract. What dependencies does this have?
         """
-        raise NotImplemented
+        raise NotImplementedError
 
     def load(self, env, arg, kwargs):
         """
         Abstract. env is a environment.Environment object
         args is a list of arguments from jinja template
         """
-        raise NotImplemented
+        raise NotImplementedError
     

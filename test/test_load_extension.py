@@ -83,6 +83,15 @@ class TestMoreArgs(unittest.TestCase):
         ])
 
 
+class TestListArg(unittest.TestCase):
+    def runTest(self):
+        template = '{% load a b c=["foo", bar, 5] %}'
+        loads = parse_loads(template)
+        self.assertEquals(loads,[
+            (('a', 'b', {'c':['foo', 'bar', 5]}), {})
+        ])
+
+
 class TestNaughtyLoadType(unittest.TestCase):
     def runTest(self):
         """load type must be bare name"""

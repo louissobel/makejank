@@ -91,9 +91,12 @@ class LoadExtension(Extension):
             return node.value
         elif isinstance(node, jinja2.nodes.Name):
             return node.name
+        elif isinstance(node, jinja2.nodes.List):
+            # Recurse.
+            return [self._get_value_or_raise(n, lineno, parser) for n in node.items]
         else:
             raise jinja2.TemplateSyntaxError(
-                "Arguments to load must be strings or bare keywords. Got %s" % type(node).__name__,
+                "Arguments to load must be constants, bare keywords, or a list. Got %s" % type(node).__name__,
                 lineno,
                 parser.name,
                 parser.filename,

@@ -39,7 +39,7 @@ def main():
     if mode == SOURCEMODE or mode == LOADMODE:
         get_deps = args.deps
         if mode == SOURCEMODE:
-            source_path = os.path.join(cwd, source)
+            source_path = os.path.join(env.cwd, config['source'])
             result = env.render_template(source_path, get_deps=get_deps)
         else:
             result = env.render_load_args(args.load, get_deps=get_deps)

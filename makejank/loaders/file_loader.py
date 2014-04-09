@@ -19,7 +19,9 @@ class FileLoader(BaseLoader):
             with open(pathname) as f:
                 contents = f.read()
         except IOError as e:
-            raise ValueError("Error reading file %s: %s" % (pathname, e.strerror))
+            msg = "Error reading file %s: %s" % (pathname, e.strerror)
+            env.logger.error(msg)
+            raise ValueError(msg)
 
         return self.process_file_contents(contents, env, filename, kwargs)
 

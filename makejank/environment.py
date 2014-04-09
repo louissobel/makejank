@@ -3,6 +3,8 @@ class wrapping makejank environment
 """
 import os
 import os.path
+import logging
+logger = logging.getLogger(__name__)
 
 from loader_manager import LoaderManager
 from caches import NoopCache
@@ -22,6 +24,7 @@ class Environment(object):
                 self.loader_manager.register(l)
 
         self.cwd = os.getcwd()
+        self.logger = logger
 
     def resolve_path(self, path):
         return os.path.join(self.rootdir, path)

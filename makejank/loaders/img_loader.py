@@ -17,6 +17,11 @@ class ImgLoader(FileLoader):
         # Guess mime of filename.
         mime, _ = mimetypes.guess_type(filename)
         if mime is None:
+            env.logger.debug(
+                "Unable to determine mimetype for %s. Using %s",
+                filename,
+                DEFAULT_MIMETYPE,
+            )
             mime = DEFAULT_MIMETYPE
 
         data = FileLoader.load(self, env, filename, kwargs)

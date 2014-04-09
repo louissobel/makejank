@@ -29,6 +29,8 @@ class YamlLoader(FileLoader):
         try:
             data = self.yaml.load(contents)
         except self.yaml.YAMLError as e:
-            raise ValueError("Malformed yaml in %s: %s" % (filename, e.message))
+            msg = "Malformed yaml in %s: %s" % (filename, e.message)
+            env.logger.error(msg)
+            raise ValueError(msg)
 
         return aswhat, data

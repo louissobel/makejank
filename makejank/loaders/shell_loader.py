@@ -54,9 +54,8 @@ class ShellLoader(BaseLoader):
                 shell=True,
                 preexec_fn=_preexec_fn,
             )
-        except OSError:
-            # TODO assuming that is a not found
-            raise SyntaxError("Unable to find command %s" % command[0])
+        except OSError as e:
+            raise ValueError("Unable to spawn shell for command %s: %s" % (arg, e.strerror))
 
         timeout = kwargs.get('timeout')
         # TODO type check timouet?

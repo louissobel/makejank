@@ -6,3 +6,4 @@ from css_loader import CSSLoader
 from js_loader import JSLoader
 from img_loader import ImgLoader
 from makejank_loader import MakejankLoader
+from shell_loader import ShellLoader

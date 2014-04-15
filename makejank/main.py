@@ -241,6 +241,7 @@ def get_env(config):
         JSLoader(),
         ImgLoader(),
         MakejankLoader(),
+        ShellLoader(),
     ]
     # TODO additional loaders
 

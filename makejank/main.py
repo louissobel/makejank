@@ -22,6 +22,12 @@ DEFAULT_JANKFILE_NAME = 'Jankfile'
 DEFAULT_CACHE_DIR = '.makejank_cache'
 DEFAULT_OUTPUT_DIR = 'jank'
 
+DEFAULT_LOADER_TAGS = [
+    'makejank',
+    'js',
+    'css',
+    'img',
+]
 
 def main():
     logging.basicConfig(level=logging.INFO)
@@ -87,6 +93,12 @@ def get_parser():
         action='store_true',
         default=False,
         help='Print out dependencies, one per line',
+    )
+
+    parser.add_argument(
+        '--use',
+        action='store_true',
+        help='specifiy a loader to use',
     )
 
     # config options
@@ -176,6 +188,13 @@ def get_config(args, parser):
     config['cache_dir'] = determine_cache_dir(config, args)
     config['output_dir'] = determine_output_dir(config, args)
 
+    # Compute uses
+    use_loaders = determine_use_loaders(config, args)
+    for loader_tag in use_loaders:
+        if not isinstance(loader_tag, basestring):
+            parser.error('all loaders to use must be strings')
+    config['use_loaders'] = use_loaders
+
     return config
 
 def determine_base_dir(config, args):
@@ -233,6 +252,16 @@ def determine_output_dir(config, args):
         else:
             return None
 
+def determine_use_loaders(config, args):
+    """
+    Default first, then jankfile, then args.
+    That way, later options can overwrite default
+    """
+    jankfile = config['jankfile']
+
+    jankfile_use = jankfile.get('use', [])
+    return DEFAULT_LOADER_TAGS + jankfile_use + (args.use or [])
+
 def get_env(config):
 
     if config['cache_dir'] is None:
@@ -245,13 +274,7 @@ def get_env(config):
         cache=cache,
     )
 
-    default_loader_tags = [
-        'makejank',
-        'js',
-        'css',
-        'img',
-    ]
-    map(env.use_string, default_loader_tags)
+    map(env.use_string, config['use_loaders'])
     return env
 
 if __name__ == "__main__":

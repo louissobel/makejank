@@ -23,6 +23,7 @@ def null_except(**kwargs):
         'jankfile': None,
         'target': None,
         'deps': False,
+        'use_loaders': main.DEFAULT_LOADER_TAGS,
     }
     for k, v in kwargs.items():
         if not k in out:

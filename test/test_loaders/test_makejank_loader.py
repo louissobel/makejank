@@ -10,16 +10,8 @@ from makejank.environment import Environment
 
 import test.helpers
 
-env = Environment(
-    rootdir=test.helpers.datadir(),
-    loaders = [
-        YamlLoader(),
-        CSSLoader(),
-        JSLoader(),
-        ImgLoader(),
-        MakejankLoader(),
-    ]
-)
+env = Environment(rootdir=test.helpers.datadir())
+map(env.use_string, ('img', 'js', 'makejank', 'css'))
 
 class TestDeps(unittest.TestCase):
     def runTest(self):

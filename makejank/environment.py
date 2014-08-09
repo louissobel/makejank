@@ -5,29 +5,55 @@ import os
 import os.path
 import logging
 logger = logging.getLogger(__name__)
+import re
 
 from loader_manager import LoaderManager
 from caches import NoopCache
+from loader_finder import LoaderFinder
 
 from renderer import Renderer
 from dependency_detector import DependencyDetector
 
+USE_REGEX = re.compile(r'^(\w+)(?: from ([\w\.]+))?$')
+
 class Environment(object):
-    def __init__(self, rootdir, loaders=None, cache=None):
+    def __init__(self, rootdir, cache=None):
         self.rootdir = rootdir
         if not os.path.isabs(self.rootdir):
             raise ValueError("rootdir of environment must be absolute")
 
         self.loader_manager = LoaderManager(cache=cache)
-        if loaders is not None:
-            for l in loaders:
-                self.loader_manager.register(l)
+        self.loader_finder = LoaderFinder()
 
         self.cwd = os.getcwd()
         self.logger = logger
 
     def resolve_path(self, path):
         return os.path.join(self.rootdir, path)
+
+    def find_and_use_loader(self, loader_tag, from_package):
+        """
+        gets it from loader_finder and registers it with manager.
+        from_package can be None.
+
+        does NO error handling
+        """
+        l = self.loader_finder.find(loader_tag, from_package)
+        self.loader_manager.register(l)
+
+    def use_string(self, string):
+        """
+        Parse string like a use statement `a [from b[.c]*]`
+        and send it to find_and_use_loader. Raises value error if bad string.
+        """
+        self.find_and_use_loader(*self._parse_use_string(string))
+
+    def _parse_use_string(self, string):
+        m = USE_REGEX.match(string)
+        if not m:
+            raise ValueError("Bad use string")
+        else:
+            return m.group(1), m.group(2)
 
     ## Rendering methods (publics)
     def render_string(self, string, get_deps=False):

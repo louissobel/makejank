@@ -22,3 +22,21 @@ class TestEnvironmentRequiresAbsoluteRootdir(unittest.TestCase):
         with self.assertRaises(ValueError):
             Environment('a/b/c')
 
+class TestParseUseString(unittest.TestCase):
+
+    def setUp(self):
+        self.env = Environment(rootdir='/')
+
+    def test_basic(self):
+        lt, p = self.env._parse_use_string('hi')
+        self.assertEquals(lt, 'hi')
+        self.assertIsNone(p)
+
+    def test_from(self):
+        lt, p = self.env._parse_use_string('hi from foo.bar')
+        self.assertEquals(lt, 'hi')
+        self.assertEquals(p, 'foo.bar')
+
+    def test_bad(self):
+        with self.assertRaises(ValueError):
+            self.env._parse_use_string('hi form fb')

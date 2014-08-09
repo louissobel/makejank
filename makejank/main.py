@@ -235,26 +235,24 @@ def determine_output_dir(config, args):
 
 def get_env(config):
 
-    loaders = [
-        YamlLoader(),
-        CSSLoader(),
-        JSLoader(),
-        ImgLoader(),
-        MakejankLoader(),
-        ShellLoader(),
-    ]
-    # TODO additional loaders
-
     if config['cache_dir'] is None:
         cache = None
     else:
         cache = FilesystemCache(config['cache_dir'])
 
-    return environment.Environment(
+    env = environment.Environment(
         rootdir=config['base_dir'],
-        loaders=loaders,
         cache=cache,
     )
+
+    default_loader_tags = [
+        'makejank',
+        'js',
+        'css',
+        'img',
+    ]
+    map(env.use_string, default_loader_tags)
+    return env
 
 if __name__ == "__main__":
     main()

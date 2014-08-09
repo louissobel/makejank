@@ -19,10 +19,11 @@ class TemplateProcessor(object):
         self.jinja_loader = jinja2.FileSystemLoader(['/', env.rootdir])
         self.jinja_env = jinja2.Environment(
             loader=self.jinja_loader,
-            extensions=[jinja_extensions.LoadExtension],
+            extensions=[jinja_extensions.LoadExtension, jinja_extensions.UseExtension],
         )
 
         self.jinja_env.makejank_load_callback = self.load_callback
+        self.jinja_env.makejank_use_callback = env.find_and_use_loader
         self.env = env
 
     def load_callback(self, load_type, arg, kwargs):

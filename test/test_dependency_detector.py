@@ -41,6 +41,7 @@ class TestBasic(unittest.TestCase):
             'dep2',
         ]))
 
+
 class TestKeyErrorHandling(unittest.TestCase):
     """
     Turns a key error into a TypeError

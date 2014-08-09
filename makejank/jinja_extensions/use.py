@@ -76,6 +76,7 @@ class UseExtension(Extension):
 
         # TODO: error handling
         self.environment.makejank_use_callback(loader_tag, from_package)
+        return jinja2.nodes.Output([])
 
     def _flatten_getattr_tree(self, node):
         """

@@ -8,6 +8,7 @@
 
 
 {% block body %}
+    {% use yaml %}
     {% load yaml "example/data.yml" as=data %}
 
     <h1>{{ data.greeting }}</h1>

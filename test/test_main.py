@@ -24,6 +24,7 @@ def null_except(**kwargs):
         'target': None,
         'deps': False,
         'use_loaders': main.DEFAULT_LOADER_TAGS,
+        'production': False,
     }
     for k, v in kwargs.items():
         if not k in out:

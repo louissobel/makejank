@@ -1,0 +1,11 @@
+# A Jankfile
+
+# basedir defaults to the directory OF the jankfile.
+# cachedir defaults to basedir .makejank_cache
+
+use:
+  - shell
+
+targets:
+    index.html: makejank 'index.html'
+    detail.html: makejank 'detail.html'

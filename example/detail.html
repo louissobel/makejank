@@ -1,0 +1,16 @@
+{% extends "common.html" %}
+
+{% block head %}
+
+  {% load js "detail.js" %}
+  {% load css "detail.css" %}
+
+{% endblock %}
+
+{% block content %}
+<a href="index.html">&lt; &lt; Index</a><br />
+<button type="button" id="clickme">CLICK</button>
+
+<div onload="setup()" id="content">
+</div>
+{% endblock %}

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+  {% load css "common.css" %}
+  <title>Website</title>
+  {% block head %}
+  {% endblock %}
+
+</head>
+
+<body>
+
+<div>
+  <h1 class="pull-left">Website</h1>
+  {% load img "koala.jpg" %}
+</div>
+
+{% block content %}
+
+
+{% endblock %}
+</body>
+
+{% load shell date %}
+
+</html>

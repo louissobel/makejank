@@ -128,6 +128,12 @@ def get_parser():
         default=None,
         help="Directory for the cache. Absolute or relative to BASE_DIR"
     )
+    cache_group.add_argument(
+        '--production',
+        action='store_true',
+        default=False,
+        help='Set mode to production',
+    )
 
     # Misc.
     parser.add_argument(
@@ -195,6 +201,7 @@ def get_config(args, parser):
             parser.error('all loaders to use must be strings')
     config['use_loaders'] = use_loaders
 
+    config['production'] = args.production
     return config
 
 def determine_base_dir(config, args):
@@ -272,6 +279,7 @@ def get_env(config):
     env = environment.Environment(
         rootdir=config['base_dir'],
         cache=cache,
+        production=config['production'],
     )
 
     map(env.use_string, config['use_loaders'])

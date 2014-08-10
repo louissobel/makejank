@@ -17,10 +17,12 @@ from dependency_detector import DependencyDetector
 USE_REGEX = re.compile(r'^(\w+)(?: from ([\w\.]+))?$')
 
 class Environment(object):
-    def __init__(self, rootdir, cache=None):
+    def __init__(self, rootdir, cache=None, production=False):
         self.rootdir = rootdir
         if not os.path.isabs(self.rootdir):
             raise ValueError("rootdir of environment must be absolute")
+
+        self.production = production
 
         self.loader_manager = LoaderManager(cache=cache)
         self.loader_finder = LoaderFinder()

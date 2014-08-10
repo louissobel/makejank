@@ -5,7 +5,12 @@ env
 # for testing
 .makejank_cache
 
+jank/
+
 .ackrc
 
 cover
 .coverage
+
+build/
+*.egg-info/

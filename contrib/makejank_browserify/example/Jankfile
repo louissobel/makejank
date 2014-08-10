@@ -1,0 +1,8 @@
+
+use:
+  - browserify
+
+targets:
+  page.html: makejank "page.html"
+
+ 

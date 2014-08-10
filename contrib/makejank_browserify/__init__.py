@@ -1,0 +1,1 @@
+from browserify_loader import _InnerBrowserifyLoader as loader

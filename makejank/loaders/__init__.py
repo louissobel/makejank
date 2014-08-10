@@ -9,7 +9,6 @@ from img_loader import ImgLoader
 from makejank_loader import MakejankLoader
 from shell_loader import ShellLoader
 
-
 class WrapLoader(object):
     """
     Namespace for loader finder

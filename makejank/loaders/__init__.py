@@ -1,4 +1,5 @@
 from base_loader import BaseLoader
+from loader_wrapping_loader import LoaderWrappingLoader
 
 from file_loader import FileLoader
 from yaml_loader import YamlLoader

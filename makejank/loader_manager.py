@@ -30,20 +30,21 @@ class LoaderManager(object):
             return loader
 
     def get_deps(self, env, loader_tag, arg, kwargs):
-        return self._access_loader(env, loader_tag, arg, kwargs, get_deps=True)
+        loader = self.get_loader(loader_tag) # Raises KeyError
+        return self.access_loader(env, loader, arg, kwargs, get_deps=True)
 
     def service(self, env, loader_tag, arg, kwargs):
-        return self._access_loader(env, loader_tag, arg, kwargs)
+        loader = self.get_loader(loader_tag) # Raises KeyError
+        return self.access_loader(env, loader, arg, kwargs)
 
-    def _access_loader(self, env, loader_tag, arg, kwargs, get_deps=False):
+    def access_loader(self, env, loader, arg, kwargs, get_deps=False):
         logger.debug(
             "Accessing loader %s, arg=%r, kwargs=%r, get_deps=%r",
-            loader_tag,
+            loader.tag,
             arg,
             kwargs,
             get_deps,
         )
-        loader = self.get_loader(loader_tag) # Raises KeyError
 
         product = loader.product(env, arg, kwargs)
         dontcache = product is None or self.cache is None

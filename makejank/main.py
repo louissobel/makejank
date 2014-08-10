@@ -97,7 +97,7 @@ def get_parser():
 
     parser.add_argument(
         '--use',
-        action='store_true',
+        action='append',
         help='specifiy a loader to use',
     )
 

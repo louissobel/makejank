@@ -23,7 +23,4 @@ class FileLoader(BaseLoader):
             env.logger.error(msg)
             raise ValueError(msg)
 
-        return self.process_file_contents(contents, env, filename, kwargs)
-
-    def process_file_contents(self, contents, env, filename, kwargs):
         return contents

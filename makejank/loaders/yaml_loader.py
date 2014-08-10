@@ -1,12 +1,12 @@
 """
 Loader to load and parse a YAML file
 """
-from . import FileLoader
+from . import FileLoader, LoaderWrappingLoader
 
-class YamlLoader(FileLoader):
+class YamlLoader(LoaderWrappingLoader):
 
     tag = 'yaml'
-
+    WRAPPED_LOADER = FileLoader()
     CACHE_RESULT = False
 
     def __init__(self):
@@ -17,17 +17,15 @@ class YamlLoader(FileLoader):
             # TODO: what error?
             raise ValueError('yaml loader cannot find yaml module')
 
-    def load(self, env, filename, kwargs):
+    def wrap_result(self, env, filename, kwargs, result):
         aswhat = kwargs.get('as')
         if aswhat is None:
             raise TypeError('as= is required argument to yaml loader')
         if not isinstance(aswhat, basestring):
             raise TypeError('as argument to yaml loader must be basestring')
 
-        contents = FileLoader.load(self, env, filename, kwargs)
-
         try:
-            data = self.yaml.load(contents)
+            data = self.yaml.load(result)
         except self.yaml.YAMLError as e:
             msg = "Malformed yaml in %s: %s" % (filename, e.message)
             env.logger.error(msg)

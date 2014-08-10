@@ -20,7 +20,7 @@ class TestProcessContents(unittest.TestCase):
 
     def runTest(self):
         loader = JSLoader()
-        result = loader.process_file_contents(self.SCRIPT, None, None, None)
+        result = loader.wrap_result(None, None, None, self.SCRIPT)
 
         result_soup = BeautifulSoup(result)
         child_nodes = list(result_soup.children)

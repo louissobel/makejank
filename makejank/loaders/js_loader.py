@@ -1,13 +1,14 @@
-from . import FileLoader
+from . import FileLoader, LoaderWrappingLoader
 
 SCRIPT_TEMPLATE = """<script type="text/javascript">
 %s
 </script>"""
 
 
-class JSLoader(FileLoader):
+class JSLoader(LoaderWrappingLoader):
 
     tag = 'js'
+    WRAPPED_LOADER = FileLoader()
 
-    def process_file_contents(self, contents, env, filename, kwargs):
-        return SCRIPT_TEMPLATE % contents
+    def wrap_result(self, env, arg, kwargs, result):
+        return SCRIPT_TEMPLATE % result

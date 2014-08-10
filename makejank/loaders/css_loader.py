@@ -1,12 +1,13 @@
-from . import FileLoader
+from . import FileLoader, LoaderWrappingLoader
 
 CSS_TEMPLATE = """<style type="text/css">
 %s
 </style>"""
 
-class CSSLoader(FileLoader):
+class CSSLoader(LoaderWrappingLoader):
 
     tag = 'css'
+    WRAPPED_LOADER = FileLoader()
 
-    def process_file_contents(self, contents, env, filename, kwargs):
-        return CSS_TEMPLATE % contents
+    def wrap_result(self, env, arg, kwargs, result):
+        return CSS_TEMPLATE % result

@@ -55,7 +55,7 @@ class TestJankfile(IntegrationTestMixin, unittest.TestCase):
 class TestSource(unittest.TestCase):
 
     def runTest(self):
-        command = "makejank example/index.html -b example/"
+        command = "makejank example/index.html -b example/ --use shell"
         sys.argv = command.split(' ')
 
         result = capture_main_output()

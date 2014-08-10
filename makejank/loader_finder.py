@@ -1,14 +1,19 @@
 """
 Loader Finder
 """
+import os
+import sys
 
 MAKEJANK_STDLIB_PACKAGE='makejank.loaders'
 LOADER_MODULE_TEMPLATE = "makejank_%s"
 LOADER_KLASS_ATTRIBUTE = 'loader'
 
-from makejank.loaders import BaseLoader
+from .loaders import BaseLoader
 
 class LoaderFinder(object):
+
+    def __init__(self):
+        sys.path.append(os.getcwd())
 
     def find(self, loader_tag, from_package=None):
         """

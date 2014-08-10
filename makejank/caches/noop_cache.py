@@ -12,4 +12,6 @@ class NoopCache(object): # pragma: no cover
 
     def last_modified(*args):
         return None
-    
+
+    def flush(self):
+        pass

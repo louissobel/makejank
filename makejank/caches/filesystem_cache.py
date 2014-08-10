@@ -9,6 +9,8 @@ Cache interface
 import os.path
 import hashlib
 import cPickle as pickle
+import shutil
+import time
 
 import logging
 logger = logging.getLogger(__name__)
@@ -36,36 +38,34 @@ class FilesystemCache(object):
         """
         performs a check to see if we can write / read to / from this directory
         """
-        self.cachedir = cachedir
-
-        if not os.path.isabs(self.cachedir):
+        if not os.path.isabs(cachedir):
             raise ValueError("Must initialize FilesystemCache with an absolute path")
 
-        if not os.path.isdir(self.cachedir):
-            if os.path.exists(self.cachedir):
+        if not os.path.isdir(cachedir):
+            if os.path.exists(cachedir):
                 raise ValueError("Cachedir already exists and is not a directory")
-            try:
-                os.mkdir(self.cachedir)
-            except OSError as e:
-                # Either some component also doesn't exist
-                # or we lack permission. Whatever.
-                raise ValueError("Unable to create cachedir: %s" % str(e))
+            else:
+                self._create_cachedir(cachedir)
+        self.cachedir = cachedir
 
         can_read_and_write = self._check_can_read_and_write()
         if not can_read_and_write:
             raise ValueError("Unable to write and read from cachedir")
 
     def last_modified(self, key):
+        start = time.time()
         times, which = self._try_access(self._filetimes, key)
         if which is None:
             result = None
         else:
             result = times['modified']
 
-        logger.debug("LAST_MODIFIED %s -> %s", key, str(result))
+        duration = time.time() - start
+        logger.debug("LAST_MODIFIED (%.2fms) %s -> %s", duration, key, str(result))
         return result
 
     def get(self, key):
+        start = time.time()
         value, which = self._try_access(self._read_file, key)
         if which is None:
             result = None
@@ -82,10 +82,12 @@ class FilesystemCache(object):
         else:
             raise AssertionError("bad type returned by _try_access")
 
-        logger.debug("GET %s -> %.40r", key, result)
+        duration = time.time() - start
+        logger.debug("GET (%.2fms) %s -> %.40r", duration, key, result)
         return result
 
     def put(self, key, value):
+        start = time.time()
         filename = self._hash(key)
         if not isinstance(value, basestring):
             filename = self._object_filename(filename)
@@ -102,7 +104,12 @@ class FilesystemCache(object):
             logger.warn("PUT silently failing writing %s (%s: %.40r)", filename, key, value)
             return
 
-        logger.debug("PUT %s %.40r", key, value)
+        duration = time.time() - start
+        logger.debug("PUT (%.2fms) %s %.40r", duration, key, value)
+
+    def flush(self):
+        self._delete_cachedir(self.cachedir)
+        self._create_cachedir(self.cachedir)
 
     def _try_access(self, method, key):
         filename = self._hash(key)
@@ -120,6 +127,23 @@ class FilesystemCache(object):
                 return result, 'object'
         else:
             return result, 'string'
+
+    def _create_cachedir(self, cachedir):
+        try:
+            os.mkdir(cachedir)
+        except OSError as e:
+            # Either some component also doesn't exist
+            # or we lack permission. Whatever.
+            raise ValueError("Unable to create cachedir: %s" % str(e))
+
+    def _delete_cachedir(self, cachedir):
+        """
+        Raises ValueError if we can't :/
+        """
+        try:
+            shutil.rmtree(cachedir)
+        except OSError as e:
+            raise ValueError("Cannot delete cachedir")
 
     def _check_can_read_and_write(self):
         """

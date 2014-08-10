@@ -101,6 +101,20 @@ def get_parser():
         help='specifiy a loader to use',
     )
 
+    parser.add_argument(
+        '--production',
+        action='store_true',
+        default=False,
+        help='Set mode to production',
+    )
+
+    parser.add_argument(
+        '--flush-cache',
+        action='store_true',
+        default=False,
+        help='Flushes the cache before running',
+    )
+
     # config options
     config_group = parser.add_argument_group(title="configuration options")
     config_group.add_argument(
@@ -127,12 +141,6 @@ def get_parser():
         '--cache-dir',
         default=None,
         help="Directory for the cache. Absolute or relative to BASE_DIR"
-    )
-    cache_group.add_argument(
-        '--production',
-        action='store_true',
-        default=False,
-        help='Set mode to production',
     )
 
     # Misc.
@@ -193,6 +201,8 @@ def get_config(args, parser):
     config['base_dir'] = determine_base_dir(config, args)
     config['cache_dir'] = determine_cache_dir(config, args)
     config['output_dir'] = determine_output_dir(config, args)
+
+    config['flush_cache'] = args.flush_cache
 
     # Compute uses
     use_loaders = determine_use_loaders(config, args)
@@ -275,6 +285,8 @@ def get_env(config):
         cache = None
     else:
         cache = FilesystemCache(config['cache_dir'])
+        if config['flush_cache']:
+            cache.flush()
 
     env = environment.Environment(
         rootdir=config['base_dir'],

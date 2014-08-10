@@ -22,4 +22,6 @@ class TestingCache(object):
     def last_modified(self, key):
         self.last_last_modified = key
         return self.c.last_modified(key)
-    
+
+    def flush(self):
+        self.c.flush()

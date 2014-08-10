@@ -4,6 +4,7 @@ Cache interface
  - get(key)
  - last_modified(key) --> None (if not exists) or last modified in unix
  - put (key, value)
+ - flush(): must dump
 """
 import time
 
@@ -30,4 +31,5 @@ class MemoryCache(object):
         now = int(time.time())
         self.inner[key] = (value, now)
 
-
+    def flush(self):
+        self.inner = {}

@@ -48,6 +48,19 @@ class CacheMixin(object):
         r = cache.last_modified('key')
         self.assertIsNone(r)
 
+    def test_flush(self):
+        """
+        After flush, errthing should be gone.
+        """
+        cache = self.get_cache()
+        cache.put('k', 'v')
+        cache.put('k2', '567')
+        cache.flush()
+        self.assertIsNone(cache.get('k'))
+        self.assertIsNone(cache.get('k2'))
+        self.assertIsNone(cache.last_modified('k'))
+        self.assertIsNone(cache.last_modified('k2'))
+
     def _type_check(self, v):
         """
         Can handle lots of types.

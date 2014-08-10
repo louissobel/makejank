@@ -84,3 +84,5 @@ class BrowserifyLoader(LoaderWrappingLoader):
         if env.production:
             javascript = slimit.minify(javascript)
         return SCRIPT_TEMPLATE % javascript
+
+loader = BrowserifyLoader

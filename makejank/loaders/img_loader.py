@@ -13,6 +13,7 @@ class ImgLoader(LoaderWrappingLoader):
 
     tag = 'img'
     WRAPPED_LOADER = FileLoader()
+    DIFFERENT_FOR_PRODUCTION = False
 
     def wrap_result(self, env, filename, kwargs, result):
         # Guess mime of filename.

@@ -1,1 +1,1 @@
-from browserify_loader import _InnerBrowserifyLoader as loader
+from browserify_loader import BrowserifyLoader as loader

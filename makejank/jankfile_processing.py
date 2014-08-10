@@ -34,7 +34,7 @@ def process_jankfile(env, jankfile, output_dir):
             done = time.time()
             millis = (done - start) * 1000
             output_target = os.path.relpath(target_file, env.cwd)
-            logger.info("%s: %s OK (%.2fms)", output_target, action, millis)
+            logger.info("\t%s: %s OK (%.2fms)", output_target, action, millis)
 
 def process_jankfile_target(env, jankfile, target, output_dir):
     """

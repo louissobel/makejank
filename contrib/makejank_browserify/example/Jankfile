@@ -4,5 +4,3 @@ use:
 
 targets:
   page.html: makejank "page.html"
-
- 

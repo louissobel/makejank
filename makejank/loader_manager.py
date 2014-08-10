@@ -4,6 +4,8 @@ Finding them, and passing data to them
 service method takes care of cacheing?
 """
 import os.path
+import time
+import functools
 
 import logging
 logger = logging.getLogger(__name__)
@@ -11,6 +13,19 @@ logger = logging.getLogger(__name__)
 import jinja2
 
 import staleness
+
+def time_and_log_access(f):
+    @functools.wraps(f)
+    def inner(self, env, loader, arg, kwargs, get_deps=False):
+        start = time.time()
+        r = f(self, env, loader, arg, kwargs, get_deps)
+        done = time.time()
+
+        action = 'Got dependencies' if get_deps else 'Loaded'
+        millis = done - start
+        logger.info(" > %s: %s %s %r OK (%.2fms)", action, loader.tag, arg, kwargs, millis)
+        return r
+    return inner
 
 class LoaderManager(object):
 
@@ -37,6 +52,7 @@ class LoaderManager(object):
         loader = self.get_loader(loader_tag) # Raises KeyError
         return self.access_loader(env, loader, arg, kwargs)
 
+    @time_and_log_access
     def access_loader(self, env, loader, arg, kwargs, get_deps=False):
         logger.debug(
             "Accessing loader %s, arg=%r, kwargs=%r, get_deps=%r",
@@ -45,7 +61,6 @@ class LoaderManager(object):
             kwargs,
             get_deps,
         )
-
         product = loader.product(env, arg, kwargs)
         dontcache = product is None or self.cache is None
 
@@ -61,7 +76,8 @@ class LoaderManager(object):
                 return result
 
         # Cache
-        deps_cache_key = product + ':dependencies' # TODO TODO TODO collisions :/
+        deps_cache_key = loader.dependencies_product(env, arg, kwargs)
+        assert deps_cache_key is not None
         cached_deps = self.cache.get(deps_cache_key)
 
         # Determine staleness.

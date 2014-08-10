@@ -10,6 +10,7 @@ class YamlLoader(LoaderWrappingLoader):
     tag = 'yaml'
     WRAPPED_LOADER = FileLoader()
     CACHE_RESULT = False
+    DIFFERENT_FOR_PRODUCTION = False
 
     def wrap_result(self, env, filename, kwargs, result):
         aswhat = kwargs.get('as')

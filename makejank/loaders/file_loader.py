@@ -9,6 +9,7 @@ from . import BaseLoader
 class FileLoader(BaseLoader):
 
     tag = 'file'
+    DIFFERENT_FOR_PRODUCTION = False
 
     def dependencies(self, env, filename, kwargs):
         return set([env.resolve_path(filename)])

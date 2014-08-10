@@ -6,6 +6,8 @@ Browserify Loader
 """
 import subprocess
 
+import slimit
+
 from makejank import BaseLoader, LoaderWrappingLoader
 
 NO_BROWSERIFY_MESSAGE = """
@@ -17,8 +19,8 @@ class _InnerBrowserifyLoader(BaseLoader):
     """
     Does dependency calculation and computation
     """
-
-    tag = 'js'
+    tag = '_browserify_inner'
+    DIFFERENT_FOR_PRODUCTION = False
 
     def __init__(self):
         """
@@ -70,3 +72,15 @@ class _InnerBrowserifyLoader(BaseLoader):
                 env.logger.error(line)
             raise ValueError("Error while loading")
         return javascript
+
+SCRIPT_TEMPLATE = "<script type='text/javascript'>%s</script>"
+
+class BrowserifyLoader(LoaderWrappingLoader):
+
+    WRAPPED_LOADER = _InnerBrowserifyLoader()
+    tag = 'js'
+
+    def wrap_result(self, env, filename, kwargs, javascript):
+        if env.production:
+            javascript = slimit.minify(javascript)
+        return SCRIPT_TEMPLATE % javascript

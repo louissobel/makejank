@@ -17,6 +17,9 @@ class TestLoader(object):
     def product(self, env, arg, kwargs):
         return self.PRODUCT_NAME
 
+    def dependencies_product(self, env, arg, kwargs):
+        return self.PRODUCT_NAME + ':dependencies'
+
     def dependencies(self, env, arg, kwargs):
         # No Deps
         return set()

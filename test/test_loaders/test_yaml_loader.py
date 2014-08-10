@@ -73,22 +73,3 @@ class TestMalformedYaml(unittest.TestCase):
         with self.assertRaises(ValueError):
             loader.load(env, arg, kwargs)
 
-
-class TestNoYaml(unittest.TestCase):
-    """
-    Tests for case of no `yaml` present
-    """
-
-    def runTest(self):
-        del sys.modules['yaml']
-        self.fail_yaml = test.helpers.ForceImportFailure(['yaml'])
-        sys.meta_path.append(self.fail_yaml)
-
-        import makejank.loaders.yaml_loader
-        reload(makejank.loaders.yaml_loader)
-        with self.assertRaises(ValueError):
-            makejank.loaders.yaml_loader.YamlLoader()
-
-        sys.meta_path.remove(self.fail_yaml)
-        reload(makejank.loaders.yaml_loader)
-

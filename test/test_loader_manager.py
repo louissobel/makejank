@@ -13,15 +13,20 @@ class TestLoader(object):
 
     LOAD_RESULT = "test product contents"
     PRODUCT_NAME = "test_product"
+    DEPENDENCIES_PRODUCT = PRODUCT_NAME + ':dependencies'
+
+    def __init__(self):
+        self._dependencies_calls = 0
 
     def product(self, env, arg, kwargs):
         return self.PRODUCT_NAME
 
     def dependencies_product(self, env, arg, kwargs):
-        return self.PRODUCT_NAME + ':dependencies'
+        return self.DEPENDENCIES_PRODUCT
 
     def dependencies(self, env, arg, kwargs):
         # No Deps
+        self._dependencies_calls += 1
         return set()
 
     def load(self, env, arg, kwargs):
@@ -217,3 +222,15 @@ class TestServiceNoCache(unittest.TestCase):
         self.assertEqual(cache.last_put, None)
         self.assertEqual(cache.last_get, None)
 
+class TestCacheDeps(unittest.TestCase):
+    """
+    deps, if not stale, should come from cache
+    """
+    def runTest(self):
+        cache = TestingCache()
+        lm = LoaderManager(cache)
+        l = TestLoader()
+        lm.register(l)
+        self.assertEqual(lm.get_deps(None, 'test', None, {}), set())
+        self.assertEqual(lm.get_deps(None, 'test', None, {}), set())
+        self.assertEqual(l._dependencies_calls, 1)

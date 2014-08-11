@@ -61,7 +61,7 @@ class FilesystemCache(object):
             result = times['modified']
 
         duration = time.time() - start
-        logger.debug("LAST_MODIFIED (%.2fms) %s -> %s", duration, key, str(result))
+        logger.debug("LAST_MODIFIED (%.2fms) %s -> %s", duration*1000, key, str(result))
         return result
 
     def get(self, key):
@@ -83,7 +83,7 @@ class FilesystemCache(object):
             raise AssertionError("bad type returned by _try_access")
 
         duration = time.time() - start
-        logger.debug("GET (%.2fms) %s -> %.40r", duration, key, result)
+        logger.debug("GET (%.2fms) %s -> %.40r", duration*1000, key, result)
         return result
 
     def put(self, key, value):
@@ -105,7 +105,7 @@ class FilesystemCache(object):
             return
 
         duration = time.time() - start
-        logger.debug("PUT (%.2fms) %s %.40r", duration, key, value)
+        logger.debug("PUT (%.2fms) %s %.40r", duration*1000, key, value)
 
     def flush(self):
         self._delete_cachedir(self.cachedir)

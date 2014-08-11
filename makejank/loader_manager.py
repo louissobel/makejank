@@ -17,9 +17,9 @@ import staleness
 def time_and_log_access(f):
     @functools.wraps(f)
     def inner(self, env, loader, arg, kwargs, get_deps=False):
-        start = time.time()
+        start = time.time() * 1000
         r = f(self, env, loader, arg, kwargs, get_deps)
-        done = time.time()
+        done = time.time() * 1000
 
         action = 'Got dependencies' if get_deps else 'Loaded'
         millis = done - start
@@ -61,11 +61,11 @@ class LoaderManager(object):
             kwargs,
             get_deps,
         )
-        product = loader.product(env, arg, kwargs)
-        dontcache = product is None or self.cache is None
+        product_cache_key = loader.product(env, arg, kwargs)
+        dontcache = product_cache_key is None or self.cache is None
 
         if dontcache:
-            logger.debug("Skipping cache (product=%r, hascache=%r)", product, self.cache is None)
+            logger.debug("Skipping cache (product=%r, hascache=%r)", product_cache_key, self.cache is None)
             if get_deps:
                 deps = self._dependencies_and_check(loader, env, arg, kwargs)
                 logger.debug("Got deps: %r", deps)
@@ -78,57 +78,47 @@ class LoaderManager(object):
         # Cache
         deps_cache_key = loader.dependencies_product(env, arg, kwargs)
         assert deps_cache_key is not None
-        cached_deps = self.cache.get(deps_cache_key)
 
+        cached_deps = self.cache.get(deps_cache_key)
         # Determine staleness.
+        # Dependencies are stale if we dont have them or if any have changed.
+        # Product is stale if dependencies are stale or if we don't have product
         if cached_deps is None:
-            # Because there were no cached deps,
-            # the product itself must not be cached,
-            # so stale is infinitely True.
-            logger.debug("No cached deps at %s, %s is stale", deps_cache_key, product)
-            stale = True
+            logger.debug("No cached deps at %s", deps_cache_key)
+            stale_deps = True
         else:
-            # The product will be stale if any of its dependencies have changed.
-            # The product will be fresh if none of its dependencies have changed.
-            product_last_modified = self.cache.last_modified(product)
-            # is_stale returns True if first arugment is None..
-            # so if the product_last_modified is None
-            # (the product is not in the cache)
-            # stale will be True.
-            stale = staleness.is_stale(product_last_modified, cached_deps)
+            dependencies_last_modified = self.cache.last_modified(deps_cache_key)
+            stale_deps = staleness.is_stale(dependencies_last_modified, cached_deps)
             logger.debug(
-                "Checking staleness of product %s (lm: %r) -> stale=%r",
-                product,
-                product_last_modified,
-                stale,
+                "Checking staleness of product deps %s (lm: %r) -> stale=%r",
+                product_cache_key,
+                dependencies_last_modified,
+                stale_deps,
             )
 
-        # so stale means either
-        # (deps_cache_key \not\in cache) || (product \not\in cache)
-        if stale:
+        deps = cached_deps
+        if stale_deps:
             deps = self._dependencies_and_check(loader, env, arg, kwargs)
             logger.debug("Stale deps, recomputed to: %r", deps)
             self.cache.put(deps_cache_key, deps)
-            if get_deps:
-                # Then we're done.
-                return deps
-            result = self._load_and_check(loader, env, arg, kwargs)
-            self.cache.put(product, result)
-            logger.debug("Stale result, recomputed to: %.40r...", result)
-            return result
         else:
-            # The cached values do not need to be type checked
-            # because they will only be cached if they pass the
-            # type checks.
-            if get_deps:
-                # cached_deps will not be None, becuase if it is,
-                # that stale must also be True
-                logger.debug("Cached deps are fresh, returning: %r", cached_deps)
-                return cached_deps
+            logger.debug("Cached deps are fresh: %r", deps)
 
-            result = self.cache.get(product)
-            logger.debug("Cached result is fresh, returning: %.40r...", result)
-            return result
+        if get_deps:
+            # Then we're done.
+            return deps
+
+        cached_product = self.cache.get(product_cache_key)
+        stale_product = stale_deps or cached_product is None
+        product = cached_product
+        if stale_product:
+            product = self._load_and_check(loader, env, arg, kwargs)
+            logger.debug("Stale result, recomputed to: %.40r...", product)
+            self.cache.put(product_cache_key, product)
+        else:
+            logger.debug("Cached result is fresh, returning: %.40r...", product)
+
+        return product
 
     def _dependencies_and_check(self, l, env, arg, kwargs):
         ds = l.dependencies(env, arg, kwargs)

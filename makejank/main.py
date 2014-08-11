@@ -37,6 +37,8 @@ def main():
 
     if args.verbose:
         logging.getLogger().setLevel(logging.DEBUG)
+    elif args.quiet:
+        logging.getLogger().setLevel(logging.ERROR)
 
     config = get_config(args, parser)
     env = get_env(config)
@@ -144,13 +146,22 @@ def get_parser():
     )
 
     # Misc.
-    parser.add_argument(
+    volume_group = parser.add_mutually_exclusive_group()
+    volume_group.add_argument(
         '-v',
         '--verbose',
         action='store_true',
         default=False,
         help="Verbose output on stderr",
     )
+    volume_group.add_argument(
+        '-q',
+        '--quiet',
+        action='store_true',
+        default=False,
+        help='Silence logging output',
+    )
+    
     return parser
 
 def get_config(args, parser):

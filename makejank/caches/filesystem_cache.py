@@ -11,6 +11,7 @@ import hashlib
 import cPickle as pickle
 import shutil
 import time
+import errno
 
 import logging
 logger = logging.getLogger(__name__)
@@ -88,14 +89,26 @@ class FilesystemCache(object):
 
     def put(self, key, value):
         start = time.time()
-        filename = self._hash(key)
+        s_filename = self._hash(key)
+        o_filename = self._object_filename(s_filename)
         if not isinstance(value, basestring):
-            filename = self._object_filename(filename)
+            which = 'object'
+            filename = o_filename
+            delete_filename = s_filename
             try:
                 value = self._serialize_object(value)
             except _CacheSerializationError:
                 logger.warn("PUT silently failing serializing %s: %.40r", key, value)
                 return
+        else:
+            filename = s_filename
+            delete_filename = o_filename
+            which = 'string'
+
+        unlink_ok = self._unlink(delete_filename)
+        if not unlink_ok:
+            # Explode - we're in a bad state.
+            raise RuntimeError("Unable to delete file. Bad stuff.")
 
         # Now write out.
         try:
@@ -153,19 +166,35 @@ class FilesystemCache(object):
         """
         key = 'CHECK_CAN_READ_AND_WRITE'
         value = 'ABC123xyz!@#$'
-        self.put(key, value)
+        try:
+            self.put(key, value)
+        except RuntimeError:
+            return False
+
         r = self.get(key)
         if not r == value:
             return False
 
         # Now delete it.
-        path = self._get_path(self._hash(key))
+        unlink_ok = self._unlink(self._hash(key))
+        if not unlink_ok:
+            return False
+
+        return True
+
+    def _unlink(self, filename):
+        path = self._get_path(filename)
         try:
             os.unlink(path)
         except OSError as e:
-            return False # This could use some more information.
-
-        return True
+            if e.errno == errno.ENOENT:
+                # Great. The file wasn't there anyway.
+                return True
+            else:
+                # Uh oh.
+                return False
+        else:
+            return True
 
     def _write_file(self, filename, contents):
         path = self._get_path(filename)

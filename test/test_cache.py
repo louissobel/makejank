@@ -109,10 +109,6 @@ class TestMemoryCache(CacheMixin, unittest.TestCase):
 
     get_cache = lambda s : MemoryCache()
 
-class TestTestingCache(CacheMixin, unittest.TestCase):
-
-    get_cache = lambda s : TestingCache()
-
 class TestFilesystemCache(CacheMixin, unittest.TestCase):
 
     def setUp(self):

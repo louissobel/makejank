@@ -82,25 +82,31 @@ class LoaderManager(object):
         cached_deps = self.cache.get(deps_cache_key)
         # Determine staleness.
         # Dependencies are stale if we dont have them or if any have changed.
-        # Product is stale if dependencies are stale or if we don't have product
+        # Product is stale if:
+        # - we don't have it
+        # - dependencies are stale
+        # - dependency last_modified is after product last_modified
+        # SO, if dependencies are stale, and we are re-getting them,
+        # INVALIDATE the cached product
         if cached_deps is None:
             logger.debug("No cached deps at %s", deps_cache_key)
             stale_deps = True
         else:
-            dependencies_last_modified = self.cache.last_modified(deps_cache_key)
-            stale_deps = staleness.is_stale(dependencies_last_modified, cached_deps)
+            deps_last_modified = self.cache.last_modified(deps_cache_key)
+            stale_deps = staleness.is_stale(deps_last_modified, cached_deps)
             logger.debug(
                 "Checking staleness of product deps %s (lm: %r) -> stale=%r",
                 product_cache_key,
-                dependencies_last_modified,
+                deps_last_modified,
                 stale_deps,
             )
 
         deps = cached_deps
         if stale_deps:
             deps = self._dependencies_and_check(loader, env, arg, kwargs)
-            logger.debug("Stale deps, recomputed to: %r", deps)
+            logger.debug("Stale deps, purging product, recomputed to: %r", deps)
             self.cache.put(deps_cache_key, deps)
+            self.cache.put(product_cache_key, None)
         else:
             logger.debug("Cached deps are fresh: %r", deps)
 
@@ -109,9 +115,11 @@ class LoaderManager(object):
             return deps
 
         cached_product = self.cache.get(product_cache_key)
-        stale_product = stale_deps or cached_product is None
         product = cached_product
-        if stale_product:
+        # Because when getting dependencies we purge if they
+        # need updating, the presence of the cached product
+        # is enough to know that it is not stale
+        if cached_product is None:
             product = self._load_and_check(loader, env, arg, kwargs)
             logger.debug("Stale result, recomputed to: %.40r...", product)
             self.cache.put(product_cache_key, product)

@@ -36,6 +36,13 @@ class TestLoaderWithNonexistentDependency(TestLoader):
     def dependencies(self, env, args, kwargs):
         return set(['/' + test.helpers.nonexistent_filename()])
 
+class TestLoaderWithStaleThenNotStaleDeps(TestLoader):
+    def dependencies(self, env, args, kwargs):
+        self._dependencies_calls += 1
+        if self._dependencies_calls == 1:
+            return set(['/' + test.helpers.nonexistent_filename()])
+        else:
+            return set([])
 
 class TestLoaderNoCache(TestLoader):
     def product(self, env, args, kwargs):
@@ -234,3 +241,19 @@ class TestCacheDeps(unittest.TestCase):
         self.assertEqual(lm.get_deps(None, 'test', None, {}), set())
         self.assertEqual(lm.get_deps(None, 'test', None, {}), set())
         self.assertEqual(l._dependencies_calls, 1)
+
+class TestCacheDepsThenProduct(unittest.TestCase):
+    def runTest(self):
+        # I have a product
+        # the deps are stale
+        # we call get_deps
+        # deps become not stale
+        # but product still is stale!
+        cache = TestingCache()
+        lm = LoaderManager(cache)
+        lm.register(TestLoaderWithStaleThenNotStaleDeps())
+        cache.put(TestLoader.PRODUCT_NAME, 'bad_value')
+        lm.get_deps(None, 'test', None, {})
+        # another to get the now not stale deps
+        lm.get_deps(None, 'test', None, {})
+        self.assertEquals(lm.service(None, 'test', None, {}), TestLoader.LOAD_RESULT)
